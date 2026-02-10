@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Ranking Portal - High Impact</title>
+    <title>Prompt Tracks - AI Song Ranking</title>
     <style>
         :root {
             --text-main: #2d3436;
@@ -19,24 +19,60 @@
         }
 
         body { background-color: var(--bg-body); margin: 0; font-family: -apple-system, system-ui, sans-serif; color: var(--text-main); }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-
-        /* Filter Section */
-        .filter-card { background: var(--bg-card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); margin-bottom: 25px; }
-        .filter-label { font-size: 10px; font-weight: 800; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 8px; }
         
+        /* 固定ヘッダーの設定 */
+        .header-sticky {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(248, 249, 250, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 15px 0 10px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        /* メインコンテンツの開始位置（JSで動的に調整） */
+        #main-content { padding-top: 180px; padding-bottom: 40px; }
+
+        /* ロゴエリア */
+        .brand-area {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .main-logo {
+            height: 52px;
+            width: auto;
+            display: block;
+        }
+
+        /* フィルターカード（検索窓） */
+        .filter-card { 
+            background: var(--bg-card); 
+            padding: 16px 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
+            border: 1px solid var(--border-color);
+        }
+        
+        .filter-label { font-size: 10px; font-weight: 800; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 8px; }
         .search-input { 
             width: 100%; padding: 12px 16px; border-radius: 8px; border: 2px solid var(--border-color); 
-            font-size: 14px; outline: none; box-sizing: border-box; transition: border-color 0.2s;
+            font-size: 14px; outline: none; box-sizing: border-box; transition: 0.2s;
         }
-        .search-input:focus { border-color: var(--accent-blue); }
+        .search-input:focus { border-color: var(--accent-blue); background: #fff; }
 
-        .tag-section { border-top: 1px solid var(--tag-bg); padding-top: 15px; margin-top: 15px; }
+        /* タグセクション */
+        .tag-section { border-top: 1px solid var(--tag-bg); padding-top: 12px; margin-top: 12px; }
         .tag-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .tag-toggle-btn { font-size: 11px; color: var(--accent-blue); font-weight: bold; }
         .badge { background: var(--accent-blue); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: 8px; display: none; }
 
-        .tag-drawer { display: none; margin-top: 15px; }
+        .tag-drawer { max-height: 280px; overflow-y: auto; display: none; margin-top: 15px; }
         .tag-drawer.active { display: block; }
         .tag-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
         .tag-group-title { font-size: 10px; color: #adb5bd; font-weight: bold; width: 100%; border-left: 3px solid #eee; padding-left: 8px; margin-bottom: 8px; }
@@ -45,7 +81,7 @@
         .hashtag.is-era { background: var(--era-tag-bg); color: #0277bd; }
         .hashtag.selected { background: var(--tag-selected) !important; color: #fff !important; }
 
-        /* Grid & Cards */
+        /* カードグリッド */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
         .card { background: var(--bg-card); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid #eee; display: flex; flex-direction: column; transition: transform 0.2s; }
         .card:hover { transform: translateY(-4px); }
@@ -60,84 +96,69 @@
         .card-title { font-weight: 800; font-size: 14px; margin: 0; line-height: 1.4; padding-right: 40px; }
         .card-artist { font-size: 12px; color: var(--text-muted); margin: 4px 0 10px; }
 
-        /* ロゴをメタデータエリア右の上辺（サムネイル直下の右側）に配置 */
-        .yt-brand-top {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            height: 11px;
-            display: block;
-        }
-
+        /* カード内YouTubeロゴ（右上） */
+        .yt-brand-top { position: absolute; top: 14px; right: 14px; height: 11px; display: block; }
         .card-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
 
         .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
         .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; transition: 0.2s; }
-        .card-tag-item:hover { background: #e0efff; }
         .card-tag-item.active { background: var(--accent-blue); color: #fff; }
 
-        /* Modal - 動画サイズを大きく改善 */
+        /* プレイヤーモーダル（大画面対応） */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         .modal.active { display: flex; }
-        .modal-inner { 
-            position: relative; 
-            width: 98%; /* 画面幅いっぱいに拡大 */
-            max-width: 1200px; /* 最大幅も大きく設定 */
-            aspect-ratio: 16/9; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-        }
-        .modal-close { 
-            position: absolute; 
-            top: -40px; 
-            right: 0; 
-            color: #fff; 
-            font-size: 30px; 
-            cursor: pointer; 
-            font-weight: bold;
-            text-shadow: 0 2px 10px rgba(0,0,0,1);
-        }
+        .modal-inner { position: relative; width: 98%; max-width: 1200px; aspect-ratio: 16/9; }
+        .modal-close { position: absolute; top: -40px; right: 0; color: #fff; font-size: 30px; cursor: pointer; font-weight: bold; }
         #player-target iframe { width: 100%; height: 100%; border: none; }
 
         @media (max-width: 768px) {
+            .main-logo { height: 40px; }
             .modal-inner { width: 100%; }
-            .modal-close { top: -45px; right: 10px; }
         }
     </style>
 </head>
 <body>
 
-<div class="container" id="app">
-    <div class="filter-card">
-        <div class="search-wrap">
-            <span class="filter-label">Keyword Search</span>
-            <input type="text" id="search-input" class="search-input" placeholder="アーティスト名、曲名、タグで検索...">
+<header class="header-sticky" id="sticky-header">
+    <div class="container">
+        <div class="brand-area">
+            <img src="logo.svg" alt="Prompt Tracks" class="main-logo">
         </div>
 
-        <div class="tag-section">
-            <div class="tag-header" id="tag-toggle">
-                <div>
-                    <span class="filter-label" style="display:inline;">Top Tags</span>
-                    <span id="selected-badge" class="badge"></span>
-                </div>
-                <div class="tag-toggle-btn">Filter ▼</div>
+        <div class="filter-card">
+            <div class="search-wrap">
+                <span class="filter-label">Keyword Search</span>
+                <input type="text" id="search-input" class="search-input" placeholder="アーティスト名、曲名、タグで検索...">
             </div>
-            <div id="tag-drawer" class="tag-drawer">
-                <div class="tag-group-title">ERA</div>
-                <div id="era-tags" class="tag-group"></div>
-                <div class="tag-group-title">GENRE / CATEGORY</div>
-                <div id="general-tags" class="tag-group"></div>
+
+            <div class="tag-section">
+                <div class="tag-header" id="tag-toggle">
+                    <div>
+                        <span class="filter-label" style="display:inline;">Top Tags</span>
+                        <span id="selected-badge" class="badge"></span>
+                    </div>
+                    <div class="tag-toggle-btn">Filter ▼</div>
+                </div>
+                <div id="tag-drawer" class="tag-drawer">
+                    <div class="tag-group-title">ERA</div>
+                    <div id="era-tags" class="tag-group"></div>
+                    <div class="tag-group-title">GENRE / CATEGORY</div>
+                    <div id="general-tags" class="tag-group"></div>
+                </div>
             </div>
         </div>
     </div>
+</header>
 
-    <div id="status" style="text-align:center; padding:100px; color:#adb5bd;">Loading...</div>
+<div class="container" id="main-content">
+    <div id="status" style="text-align:center; padding:100px; color:#adb5bd;">Loading Prompt Tracks Data...</div>
     <div id="grid" class="grid"></div>
 </div>
 
 <div id="video-modal" class="modal">
     <div class="modal-inner">
         <span class="modal-close" id="modal-close">&times;</span>
-        <div id="player-target" style="width:100%; height:100%;"></div>
+        <div id="player-target"></div>
     </div>
 </div>
 
@@ -164,7 +185,15 @@
         eraTags: document.getElementById('era-tags'),
         genTags: document.getElementById('general-tags'),
         modal: document.getElementById('video-modal'),
-        player: document.getElementById('player-target')
+        player: document.getElementById('player-target'),
+        main: document.getElementById('main-content'),
+        header: document.getElementById('sticky-header')
+    };
+
+    // ヘッダー高さに合わせてコンテンツ位置を自動調整
+    const adjustPadding = () => {
+        const height = els.header.offsetHeight;
+        els.main.style.paddingTop = `${height + 25}px`;
     };
 
     const getYTId = (url) => url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/)?.[2] ?? null;
@@ -178,6 +207,8 @@
             store.allData = data.filter(i => i.Minor_Category !== '除外');
             els.status.style.display = 'none';
             render();
+            adjustPadding();
+            window.addEventListener('resize', adjustPadding);
         } catch (e) {
             els.status.textContent = "Data loading failed.";
         }
@@ -219,6 +250,7 @@
             ? store.selectedTags.filter(t => t !== name) 
             : [...store.selectedTags, name];
         render();
+        setTimeout(adjustPadding, 50); // タグ増減による高さ変化に対応
     };
 
     const applyFilter = () => {
@@ -265,7 +297,10 @@
     };
 
     els.search.oninput = (e) => { store.query = e.target.value.toLowerCase(); applyFilter(); };
-    els.tagToggle.onclick = () => els.tagDrawer.classList.toggle('active');
+    els.tagToggle.onclick = () => {
+        els.tagDrawer.classList.toggle('active');
+        setTimeout(adjustPadding, 10);
+    };
     els.modal.onclick = (e) => { if(e.target === els.modal) closeVideo(); };
     document.getElementById('modal-close').onclick = closeVideo;
 
