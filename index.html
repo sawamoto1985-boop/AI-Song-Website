@@ -12,12 +12,13 @@
             --tag-bg: #f1f3f5;
             --tag-selected-bg: #3498db;
             --accent-blue: #3498db;
-            --era-tag-bg: #e1f5fe; /* 年代タグ用の背景色 */
+            --era-tag-bg: #e1f5fe;
         }
 
         body { background-color: #f8f9fa; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         #ai-ranking-app { color: var(--text-main); max-width: 1200px; margin: 0 auto; padding: 20px; }
 
+        /* フィルターエリア */
         .filter-wrapper { 
             margin-bottom: 25px; 
             background: #fff; 
@@ -62,16 +63,49 @@
             transition: all 0.15s ease;
             border: 1px solid #e9ecef;
         }
-        /* 年代タグのスタイル */
         .hashtag.is-era { background: var(--era-tag-bg); border-color: #b3e5fc; color: #0277bd; }
         .hashtag.selected { background: var(--tag-selected-bg) !important; color: #fff !important; border-color: var(--tag-selected-bg) !important; }
 
+        /* カードレイアウト */
         #data-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
         .ai-card { background: var(--bg-card); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; border: 1px solid #eee; transition: transform 0.2s; }
         .ai-card:hover { transform: translateY(-3px); }
-        .thumb-wrapper { width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #000; cursor: pointer; }
+        
+        .thumb-wrapper { 
+            position: relative;
+            width: 100%; 
+            aspect-ratio: 16/9; 
+            overflow: hidden; 
+            background: #000; 
+            cursor: pointer; 
+        }
         .thumb-img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
         .thumb-wrapper:hover .thumb-img { opacity: 0.7; }
+        
+        /* 再生アイコンのオーバーレイ */
+        .play-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px; height: 50px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .thumb-wrapper:hover .play-overlay { opacity: 1; }
+        .play-overlay::after {
+            content: '';
+            display: block;
+            border-style: solid;
+            border-width: 10px 0 10px 18px;
+            border-color: transparent transparent transparent #fff;
+            margin-left: 4px;
+        }
+
         .card-body { padding: 14px; flex-grow: 1; display: flex; flex-direction: column; }
         .song-title { font-weight: 800; font-size: 14px; margin: 0; line-height: 1.4; }
         .artist-name { font-weight: 500; font-size: 12px; margin: 4px 0 2px 0; color: var(--text-muted); }
@@ -79,6 +113,37 @@
         .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; border-top: 1px solid #f8f9fa; padding-top: 10px; }
         .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
         .card-tag-item.active { background: var(--accent-blue); color: #fff; }
+
+        /* モーダル表示 */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .video-modal.is-open { display: flex; }
+        .modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 900px;
+            aspect-ratio: 16/9;
+            background: #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .modal-content iframe { width: 100%; height: 100%; border: none; }
+        .close-btn {
+            position: absolute;
+            top: -40px; right: 0;
+            color: #fff;
+            font-size: 32px;
+            cursor: pointer;
+            line-height: 1;
+        }
     </style>
 </head>
 <body>
@@ -106,6 +171,13 @@
     <div id="data-container"></div>
 </div>
 
+<div id="video-modal" class="video-modal" onclick="closeVideo()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-btn" onclick="closeVideo()">&times;</span>
+        <div id="player-container" style="width:100%; height:100%;"></div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function() {
@@ -118,6 +190,31 @@
     let allData = [];
     let selectedHashtags = [];
     let searchQuery = "";
+
+    // YouTube IDを抽出するユーティリティ
+    function getYouTubeId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    // 動画を開く
+    window.openVideo = function(url) {
+        const id = getYouTubeId(url);
+        if (!id) {
+            window.open(url, '_blank');
+            return;
+        }
+        const container = document.getElementById('player-container');
+        container.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+        document.getElementById('video-modal').classList.add('is-open');
+    };
+
+    // 動画を閉じる
+    window.closeVideo = function() {
+        document.getElementById('video-modal').classList.remove('is-open');
+        document.getElementById('player-container').innerHTML = '';
+    };
 
     window.toggleTagCollapse = function() {
         const container = document.getElementById('tag-container');
@@ -134,7 +231,6 @@
         return num.toLocaleString() + " views";
     }
 
-    // 年代タグかどうかを判定する関数
     function isEraTag(tag) {
         return /^\d{4}s?$/.test(tag) || tag.includes('年代');
     }
@@ -189,21 +285,17 @@
             }
         });
 
-        // タグを「年代」と「その他（頻出順）」に分ける
         const entries = Object.entries(tagCountMap);
-        const eraTags = entries.filter(e => isEraTag(e[0])).sort((a, b) => b[0].localeCompare(a[0])); // 年代順（降順）
-        const otherTags = entries.filter(e => !isEraTag(e[0])).sort((a, b) => b[1] - a[1]).slice(0, 45); // 頻出順
+        const eraTags = entries.filter(e => isEraTag(e[0])).sort((a, b) => b[0].localeCompare(a[0]));
+        const otherTags = entries.filter(e => !isEraTag(e[0])).sort((a, b) => b[1] - a[1]).slice(0, 45);
 
-        // 結合（年代を先に配置）
         const combinedTags = [...eraTags, ...otherTags];
-
         const tagContainer = document.getElementById('tag-container');
         tagContainer.innerHTML = '';
         combinedTags.forEach(([tagName, count]) => {
             const isSelected = selectedHashtags.includes(tagName);
-            const eraClass = isEraTag(tagName) ? 'is-era' : '';
             const span = document.createElement('span');
-            span.className = `hashtag ${eraClass} ${isSelected ? 'selected' : ''}`;
+            span.className = `hashtag ${isEraTag(tagName) ? 'is-era' : ''} ${isSelected ? 'selected' : ''}`;
             span.textContent = `${tagName} (${count})`;
             span.onclick = () => toggleTagSelection(tagName);
             tagContainer.appendChild(span);
@@ -247,8 +339,9 @@
                 .join('');
 
             card.innerHTML = `
-                <div class="thumb-wrapper" onclick="window.open('${item.url}', '_blank')">
+                <div class="thumb-wrapper" onclick="openVideo('${item.url}')">
                     <img src="${item.thumbnail}" class="thumb-img" loading="lazy">
+                    <div class="play-overlay"></div>
                 </div>
                 <div class="card-body">
                     <p class="song-title">${item.Origin_song_name || 'Title Unknown'}</p>
