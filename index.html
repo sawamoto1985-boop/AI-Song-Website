@@ -3,355 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Ranking - Chronological Gallery</title>
+    <title>AI Ranking Portal - Optimized</title>
     <style>
         :root {
             --text-main: #2d3436;
             --text-muted: #636e72;
+            --bg-body: #f8f9fa;
             --bg-card: #ffffff;
             --tag-bg: #f1f3f5;
-            --tag-selected-bg: #3498db;
+            --tag-selected: #3498db;
             --accent-blue: #3498db;
             --era-tag-bg: #e1f5fe;
+            --border-color: #edf2f7;
+            --shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
-        body { background-color: #f8f9fa; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        #ai-ranking-app { color: var(--text-main); max-width: 1200px; margin: 0 auto; padding: 20px; }
+        body { background-color: var(--bg-body); margin: 0; font-family: -apple-system, system-ui, sans-serif; color: var(--text-main); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
 
-        /* フィルターエリア */
-        .filter-wrapper { 
-            margin-bottom: 25px; 
-            background: #fff; 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 2px 12px rgba(0,0,0,0.04); 
-        }
-
-        .search-box-wrapper { margin-bottom: 18px; }
-        #search-input {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 2px solid #edf2f7;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
-            box-sizing: border-box;
-        }
-        #search-input:focus { border-color: var(--accent-blue); }
-
-        .tag-filter-section { border-top: 1px solid #f1f3f5; padding-top: 15px; }
-        .tag-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
-        .filter-label { font-size: 9px; font-weight: 800; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.15em; margin: 0; }
-        .tag-toggle-btn { font-size: 11px; color: var(--accent-blue); font-weight: bold; display: flex; align-items: center; gap: 5px; }
-        .tag-toggle-btn::after { content: '▼'; font-size: 8px; transition: transform 0.3s; }
-        .tag-toggle-btn.is-open::after { transform: rotate(180deg); }
-        .selected-count-badge { background: var(--accent-blue); color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px; display: none; }
-
-        #tag-container { display: none; flex-wrap: wrap; gap: 4px; margin-top: 15px; animation: fadeIn 0.3s ease; }
-        #tag-container.is-open { display: flex; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .hashtag {
-            padding: 3px 9px;
-            border-radius: 3px;
-            background: var(--tag-bg);
-            color: #495057;
-            font-size: 10px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            border: 1px solid #e9ecef;
-        }
-        .hashtag.is-era { background: var(--era-tag-bg); border-color: #b3e5fc; color: #0277bd; }
-        .hashtag.selected { background: var(--tag-selected-bg) !important; color: #fff !important; border-color: var(--tag-selected-bg) !important; }
-
-        /* カードレイアウト */
-        #data-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-        .ai-card { background: var(--bg-card); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; border: 1px solid #eee; transition: transform 0.2s; }
-        .ai-card:hover { transform: translateY(-3px); }
+        /* Filter Section */
+        .filter-card { background: var(--bg-card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); margin-bottom: 25px; }
+        .filter-label { font-size: 10px; font-weight: 800; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 8px; }
         
-        .thumb-wrapper { 
-            position: relative;
-            width: 100%; 
-            aspect-ratio: 16/9; 
-            overflow: hidden; 
-            background: #000; 
-            cursor: pointer; 
+        .search-input { 
+            width: 100%; padding: 12px 16px; border-radius: 8px; border: 2px solid var(--border-color); 
+            font-size: 14px; outline: none; box-sizing: border-box; transition: border-color 0.2s;
         }
-        .thumb-img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
-        .thumb-wrapper:hover .thumb-img { opacity: 0.7; }
+        .search-input:focus { border-color: var(--accent-blue); }
+
+        .tag-section { border-top: 1px solid var(--tag-bg); padding-top: 15px; margin-top: 15px; }
+        .tag-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .tag-toggle-btn { font-size: 11px; color: var(--accent-blue); font-weight: bold; }
+        .badge { background: var(--accent-blue); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: 8px; display: none; }
+
+        .tag-drawer { display: none; margin-top: 15px; }
+        .tag-drawer.active { display: block; }
+        .tag-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 15px; }
+        .tag-group-title { font-size: 10px; color: #adb5bd; font-weight: bold; width: 100%; border-left: 3px solid #eee; padding-left: 8px; margin-bottom: 8px; }
+
+        .hashtag { padding: 4px 10px; border-radius: 4px; background: var(--tag-bg); font-size: 11px; cursor: pointer; border: 1px solid #e9ecef; transition: 0.2s; }
+        .hashtag.is-era { background: var(--era-tag-bg); color: #0277bd; }
+        .hashtag.selected { background: var(--tag-selected) !important; color: #fff !important; }
+
+        /* Grid & Cards */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .card { background: var(--bg-card); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid #eee; display: flex; flex-direction: column; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-4px); }
         
-        /* 再生アイコンのオーバーレイ */
-        .play-overlay {
+        .card-thumb { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; cursor: pointer; overflow: hidden; }
+        .card-thumb img.thumb-img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+        .card-thumb:hover img.thumb-img { opacity: 0.8; }
+        .card-thumb::after { content: '▶'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 32px; opacity: 0; transition: 0.3s; z-index: 1; }
+        .card-thumb:hover::after { opacity: 0.9; }
+
+        .card-content { padding: 14px; flex-grow: 1; display: flex; flex-direction: column; position: relative; }
+        .card-title { font-weight: 800; font-size: 14px; margin: 0; line-height: 1.4; padding-right: 40px; } /* ロゴのために右スペース確保 */
+        .card-artist { font-size: 12px; color: var(--text-muted); margin: 4px 0 10px; }
+
+        /* メタデータエリア右の上辺（サムネイル直下の右側） */
+        .yt-brand-top {
             position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50px; height: 50px;
-            background: rgba(0,0,0,0.6);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .thumb-wrapper:hover .play-overlay { opacity: 1; }
-        .play-overlay::after {
-            content: '';
+            top: 14px; /* card-contentのpaddingと一致 */
+            right: 14px;
+            height: 11px;
             display: block;
-            border-style: solid;
-            border-width: 10px 0 10px 18px;
-            border-color: transparent transparent transparent #fff;
-            margin-left: 4px;
         }
 
-        .card-body { padding: 14px; flex-grow: 1; display: flex; flex-direction: column; }
-        .song-title { font-weight: 800; font-size: 14px; margin: 0; line-height: 1.4; }
-        .artist-name { font-weight: 500; font-size: 12px; margin: 4px 0 2px 0; color: var(--text-muted); }
-        .view-count-info { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
-        .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; border-top: 1px solid #f8f9fa; padding-top: 10px; }
-        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
+        .card-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+
+        .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; transition: 0.2s; }
+        .card-tag-item:hover { background: #e0efff; }
         .card-tag-item.active { background: var(--accent-blue); color: #fff; }
 
-        /* モーダル表示 */
-        .video-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
-        .video-modal.is-open { display: flex; }
-        .modal-content {
-            position: relative;
-            width: 90%;
-            max-width: 900px;
-            aspect-ratio: 16/9;
-            background: #000;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .modal-content iframe { width: 100%; height: 100%; border: none; }
-        .close-btn {
-            position: absolute;
-            top: -40px; right: 0;
-            color: #fff;
-            font-size: 32px;
-            cursor: pointer;
-            line-height: 1;
-        }
+        /* Modal */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal.active { display: flex; }
+        .modal-inner { position: relative; width: 90%; max-width: 900px; aspect-ratio: 16/9; }
+        .modal-close { position: absolute; top: -45px; right: 0; color: #fff; font-size: 40px; cursor: pointer; }
+        #player-target iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
 <body>
 
-<div id="ai-ranking-app">
-    <div class="filter-wrapper">
-        <div class="search-box-wrapper">
+<div class="container" id="app">
+    <div class="filter-card">
+        <div class="search-wrap">
             <span class="filter-label">Keyword Search</span>
-            <input type="text" id="search-input" placeholder="アーティスト名、曲名、ハッシュタグで検索...">
+            <input type="text" id="search-input" class="search-input" placeholder="アーティスト名、曲名、タグで検索...">
         </div>
 
-        <div class="tag-filter-section">
-            <div class="tag-header" onclick="toggleTagCollapse()">
-                <div style="display:flex; align-items:center;">
-                    <span class="filter-label">Popular Tags</span>
-                    <span id="selected-badge" class="selected-count-badge"></span>
+        <div class="tag-section">
+            <div class="tag-header" id="tag-toggle">
+                <div>
+                    <span class="filter-label" style="display:inline;">Top Tags</span>
+                    <span id="selected-badge" class="badge"></span>
                 </div>
-                <div id="toggle-btn-label" class="tag-toggle-btn">Tags</div>
+                <div class="tag-toggle-btn">Filter ▼</div>
             </div>
-            <div id="tag-container"></div>
+            <div id="tag-drawer" class="tag-drawer">
+                <div class="tag-group-title">ERA</div>
+                <div id="era-tags" class="tag-group"></div>
+                <div class="tag-group-title">GENRE / CATEGORY</div>
+                <div id="general-tags" class="tag-group"></div>
+            </div>
         </div>
     </div>
 
-    <div id="status-msg" style="text-align:center; padding:50px; color:#adb5bd;">Loading Gallery...</div>
-    <div id="data-container"></div>
+    <div id="status" style="text-align:center; padding:100px; color:#adb5bd;">Loading...</div>
+    <div id="grid" class="grid"></div>
 </div>
 
-<div id="video-modal" class="video-modal" onclick="closeVideo()">
-    <div class="modal-content" onclick="event.stopPropagation()">
-        <span class="close-btn" onclick="closeVideo()">&times;</span>
-        <div id="player-container" style="width:100%; height:100%;"></div>
+<div id="video-modal" class="modal">
+    <div class="modal-inner">
+        <span class="modal-close" id="modal-close">&times;</span>
+        <div id="player-target"></div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-(function() {
-    const SUPABASE_URL = 'https://nnustlvukrdtoyoktmjt.supabase.co';
-    const RAW_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5udXN0bHZ1a3JkdG95b2t0bWp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNTY1MjgsImV4cCI6MjA4NTYzMjUyOH0.YlYGXKnO3TQ7Nj67lMHSUJAblkGRR61308yzIr6blRU';
-    const SUPABASE_KEY = ('e' + RAW_KEY.substring(1)).trim(); 
-    const TABLE_NAME = 'ai_song_youtube_ranking';
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    let allData = [];
-    let selectedHashtags = [];
-    let searchQuery = "";
-
-    // YouTube IDを抽出するユーティリティ
-    function getYouTubeId(url) {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
-    }
-
-    // 動画を開く
-    window.openVideo = function(url) {
-        const id = getYouTubeId(url);
-        if (!id) {
-            window.open(url, '_blank');
-            return;
-        }
-        const container = document.getElementById('player-container');
-        container.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
-        document.getElementById('video-modal').classList.add('is-open');
+(() => {
+    const CONFIG = {
+        URL: 'https://nnustlvukrdtoyoktmjt.supabase.co',
+        KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5udXN0bHZ1a3JkdG95b2t0bWp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNTY1MjgsImV4cCI6MjA4NTYzMjUyOH0.YlYGXKnO3TQ7Nj67lMHSUJAblkGRR61308yzIr6blRU',
+        YT_LOGO: "https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg",
+        MAX_TAGS: 45
     };
 
-    // 動画を閉じる
-    window.closeVideo = function() {
-        document.getElementById('video-modal').classList.remove('is-open');
-        document.getElementById('player-container').innerHTML = '';
+    const client = supabase.createClient(CONFIG.URL, 'e' + CONFIG.KEY.substring(1).trim());
+    let store = { allData: [], selectedTags: [], query: "" };
+
+    const els = {
+        grid: document.getElementById('grid'),
+        status: document.getElementById('status'),
+        search: document.getElementById('search-input'),
+        tagDrawer: document.getElementById('tag-drawer'),
+        tagToggle: document.getElementById('tag-toggle'),
+        badge: document.getElementById('selected-badge'),
+        eraTags: document.getElementById('era-tags'),
+        genTags: document.getElementById('general-tags'),
+        modal: document.getElementById('video-modal'),
+        player: document.getElementById('player-target')
     };
 
-    window.toggleTagCollapse = function() {
-        const container = document.getElementById('tag-container');
-        const btn = document.getElementById('toggle-btn-label');
-        container.classList.toggle('is-open');
-        btn.classList.toggle('is-open');
-    };
+    const getYTId = (url) => url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/)?.[2] ?? null;
+    const formatViews = (n) => n >= 10000 ? `${(n/10000).toFixed(1)}万 views` : `${Number(n).toLocaleString()} views`;
+    const isEra = (t) => /^\d{4}s?$/.test(t) || t.includes('年代');
 
-    function formatViews(val) {
-        if (!val) return "0 views";
-        const num = Number(val);
-        if (num >= 100000000) return (num / 100000000).toFixed(1) + "億 views";
-        if (num >= 10000) return (num / 10000).toFixed(1) + "万 views";
-        return num.toLocaleString() + " views";
-    }
-
-    function isEraTag(tag) {
-        return /^\d{4}s?$/.test(tag) || tag.includes('年代');
-    }
-
-    document.getElementById('search-input').addEventListener('input', (e) => {
-        searchQuery = e.target.value.toLowerCase();
-        applyFilter();
-    });
-
-    window.toggleTagSelection = function(tagName) {
-        if (selectedHashtags.includes(tagName)) {
-            selectedHashtags = selectedHashtags.filter(t => t !== tagName);
-        } else {
-            selectedHashtags.push(tagName);
-        }
-        updateBadge();
-        renderFilters();
-        applyFilter();
-    };
-
-    function updateBadge() {
-        const badge = document.getElementById('selected-badge');
-        if (selectedHashtags.length > 0) {
-            badge.style.display = 'inline-block';
-            badge.textContent = `${selectedHashtags.length} selected`;
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-
-    async function init() {
+    const init = async () => {
         try {
-            const { data, error } = await client.from(TABLE_NAME).select('*').order('rank', { ascending: true });
+            const { data, error } = await client.from('ai_song_youtube_ranking').select('*').order('rank', { ascending: true });
             if (error) throw error;
-            allData = data.filter(item => item.Minor_Category !== '除外');
-            document.getElementById('status-msg').style.display = 'none';
-            renderFilters();
-            applyFilter(); 
+            store.allData = data.filter(i => i.Minor_Category !== '除外');
+            els.status.style.display = 'none';
+            render();
         } catch (e) {
-            document.getElementById('status-msg').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+            els.status.textContent = "Data loading failed.";
         }
-    }
+    };
 
-    function renderFilters() {
-        const tagCountMap = {};
-        allData.forEach(item => {
-            if (item.hashtags) {
-                item.hashtags.split(',').forEach(t => {
-                    const clean = t.trim();
-                    if (clean) tagCountMap[clean] = (tagCountMap[clean] || 0) + 1;
-                });
-            }
+    const render = () => {
+        renderTags();
+        applyFilter();
+    };
+
+    const renderTags = () => {
+        const counts = {};
+        store.allData.forEach(item => {
+            (item.hashtags ?? "").split(',').forEach(t => {
+                const val = t.trim();
+                if (val) counts[val] = (counts[val] || 0) + 1;
+            });
         });
-
-        const entries = Object.entries(tagCountMap);
-        const eraTags = entries.filter(e => isEraTag(e[0])).sort((a, b) => b[0].localeCompare(a[0]));
-        const otherTags = entries.filter(e => !isEraTag(e[0])).sort((a, b) => b[1] - a[1]).slice(0, 45);
-
-        const combinedTags = [...eraTags, ...otherTags];
-        const tagContainer = document.getElementById('tag-container');
-        tagContainer.innerHTML = '';
-        combinedTags.forEach(([tagName, count]) => {
-            const isSelected = selectedHashtags.includes(tagName);
+        const topTags = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, CONFIG.MAX_TAGS);
+        const createTagEl = ([name, count]) => {
             const span = document.createElement('span');
-            span.className = `hashtag ${isEraTag(tagName) ? 'is-era' : ''} ${isSelected ? 'selected' : ''}`;
-            span.textContent = `${tagName} (${count})`;
-            span.onclick = () => toggleTagSelection(tagName);
-            tagContainer.appendChild(span);
+            const active = store.selectedTags.includes(name);
+            span.className = `hashtag ${isEra(name) ? 'is-era' : ''} ${active ? 'selected' : ''}`;
+            span.textContent = `${name} (${count})`;
+            span.onclick = (e) => { e.stopPropagation(); toggleTag(name); };
+            return span;
+        };
+        els.eraTags.innerHTML = '';
+        els.genTags.innerHTML = '';
+        topTags.forEach(tag => {
+            (isEra(tag[0]) ? els.eraTags : els.genTags).appendChild(createTagEl(tag));
         });
-    }
+        els.badge.style.display = store.selectedTags.length ? 'inline-block' : 'none';
+        els.badge.textContent = `${store.selectedTags.length} selected`;
+    };
 
-    function applyFilter() {
-        let filtered = allData;
-        if (selectedHashtags.length > 0) {
-            filtered = filtered.filter(item => {
-                if (!item.hashtags) return false;
-                return selectedHashtags.every(tag => item.hashtags.includes(tag));
-            });
-        }
-        if (searchQuery) {
-            filtered = filtered.filter(item => {
-                const artist = (item.Origin_artist_name || "").toLowerCase();
-                const song = (item.Origin_song_name || "").toLowerCase();
-                const tags = (item.hashtags || "").toLowerCase();
-                return artist.includes(searchQuery) || song.includes(searchQuery) || tags.includes(searchQuery);
-            });
-        }
+    const toggleTag = (name) => {
+        store.selectedTags = store.selectedTags.includes(name) 
+            ? store.selectedTags.filter(t => t !== name) 
+            : [...store.selectedTags, name];
+        render();
+    };
+
+    const applyFilter = () => {
+        const filtered = store.allData.filter(i => {
+            const matchTags = store.selectedTags.every(t => (i.hashtags ?? "").includes(t));
+            const matchQuery = !store.query || [i.Origin_song_name, i.Origin_artist_name, i.hashtags].some(f => (f ?? "").toLowerCase().includes(store.query));
+            return matchTags && matchQuery;
+        });
         renderCards(filtered);
-    }
+    };
 
-    function renderCards(items) {
-        const container = document.getElementById('data-container');
-        container.innerHTML = '';
-        if (items.length === 0) {
-            container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:80px; color:#adb5bd;">No matching results.</div>';
-            return;
-        }
-
-        items.forEach(item => {
-            const card = document.createElement('div');
-            card.className = 'ai-card';
-            const tagHtml = (item.hashtags || "").split(',')
-                .map(t => t.trim())
-                .filter(t => t)
-                .map(t => `<span class="card-tag-item ${selectedHashtags.includes(t) ? 'active' : ''}" onclick="event.stopPropagation(); toggleTagSelection('${t}')">${t}</span>`)
-                .join('');
-
-            card.innerHTML = `
-                <div class="thumb-wrapper" onclick="openVideo('${item.url}')">
-                    <img src="${item.thumbnail}" class="thumb-img" loading="lazy">
-                    <div class="play-overlay"></div>
+    const renderCards = (items) => {
+        els.grid.innerHTML = items.map(i => `
+            <div class="card">
+                <div class="card-thumb" onclick="openVideo('${i.url}')">
+                    <img src="${i.thumbnail}" class="thumb-img" alt="" loading="lazy">
                 </div>
-                <div class="card-body">
-                    <p class="song-title">${item.Origin_song_name || 'Title Unknown'}</p>
-                    <p class="artist-name">${item.Origin_artist_name || 'Unknown Artist'}</p>
-                    <div class="view-count-info">${formatViews(item.views)}</div>
-                    <div class="card-tags">${tagHtml}</div>
-                </div>`;
-            container.appendChild(card);
-        });
-    }
+                <div class="card-content">
+                    <img src="${CONFIG.YT_LOGO}" class="yt-brand-top" alt="YouTube">
+                    <p class="card-title">${i.Origin_song_name || 'Untitled'}</p>
+                    <p class="card-artist">${i.Origin_artist_name || 'Unknown'}</p>
+                    <div class="card-meta">${formatViews(i.views)}</div>
+                    <div class="card-tags">
+                        ${(i.hashtags ?? "").split(',').filter(t => t.trim()).map(t => {
+                            const active = store.selectedTags.includes(t.trim()) ? 'active' : '';
+                            return `<span class="card-tag-item ${active}" onclick="event.stopPropagation(); toggleTag('${t.trim()}')">${t.trim()}</span>`;
+                        }).join('')}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    };
+
+    window.openVideo = (url) => {
+        const id = getYTId(url);
+        if (!id) return;
+        els.player.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        els.modal.classList.add('active');
+    };
+
+    const closeVideo = () => {
+        els.modal.classList.remove('active');
+        els.player.innerHTML = '';
+    };
+
+    els.search.oninput = (e) => { store.query = e.target.value.toLowerCase(); applyFilter(); };
+    els.tagToggle.onclick = () => els.tagDrawer.classList.toggle('active');
+    els.modal.onclick = (e) => { if(e.target === els.modal) closeVideo(); };
+    document.getElementById('modal-close').onclick = closeVideo;
 
     init();
 })();
