@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Ranking Portal - Optimized</title>
+    <title>AI Ranking Portal - High Impact</title>
     <style>
         :root {
             --text-main: #2d3436;
@@ -57,13 +57,13 @@
         .card-thumb:hover::after { opacity: 0.9; }
 
         .card-content { padding: 14px; flex-grow: 1; display: flex; flex-direction: column; position: relative; }
-        .card-title { font-weight: 800; font-size: 14px; margin: 0; line-height: 1.4; padding-right: 40px; } /* ロゴのために右スペース確保 */
+        .card-title { font-weight: 800; font-size: 14px; margin: 0; line-height: 1.4; padding-right: 40px; }
         .card-artist { font-size: 12px; color: var(--text-muted); margin: 4px 0 10px; }
 
-        /* メタデータエリア右の上辺（サムネイル直下の右側） */
+        /* ロゴをメタデータエリア右の上辺（サムネイル直下の右側）に配置 */
         .yt-brand-top {
             position: absolute;
-            top: 14px; /* card-contentのpaddingと一致 */
+            top: 14px;
             right: 14px;
             height: 11px;
             display: block;
@@ -76,12 +76,32 @@
         .card-tag-item:hover { background: #e0efff; }
         .card-tag-item.active { background: var(--accent-blue); color: #fff; }
 
-        /* Modal */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        /* Modal - 動画サイズを大きく改善 */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         .modal.active { display: flex; }
-        .modal-inner { position: relative; width: 90%; max-width: 900px; aspect-ratio: 16/9; }
-        .modal-close { position: absolute; top: -45px; right: 0; color: #fff; font-size: 40px; cursor: pointer; }
+        .modal-inner { 
+            position: relative; 
+            width: 98%; /* 画面幅いっぱいに拡大 */
+            max-width: 1200px; /* 最大幅も大きく設定 */
+            aspect-ratio: 16/9; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+        .modal-close { 
+            position: absolute; 
+            top: -40px; 
+            right: 0; 
+            color: #fff; 
+            font-size: 30px; 
+            cursor: pointer; 
+            font-weight: bold;
+            text-shadow: 0 2px 10px rgba(0,0,0,1);
+        }
         #player-target iframe { width: 100%; height: 100%; border: none; }
+
+        @media (max-width: 768px) {
+            .modal-inner { width: 100%; }
+            .modal-close { top: -45px; right: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -117,7 +137,7 @@
 <div id="video-modal" class="modal">
     <div class="modal-inner">
         <span class="modal-close" id="modal-close">&times;</span>
-        <div id="player-target"></div>
+        <div id="player-target" style="width:100%; height:100%;"></div>
     </div>
 </div>
 
