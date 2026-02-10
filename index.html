@@ -1,25 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Ranking - Chronological Gallery</title>
+    <style>
+        :root {
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --bg-card: #ffffff;
+            --tag-bg: #f1f3f5;
+            --tag-selected-bg: #3498db;
+            --accent-blue: #3498db;
+            --era-tag-bg: #e1f5fe; /* 年代タグ用の背景色 */
+        }
+
+        body { background-color: #f8f9fa; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        #ai-ranking-app { color: var(--text-main); max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+        .filter-wrapper { 
+            margin-bottom: 25px; 
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04); 
+        }
+
+        .search-box-wrapper { margin-bottom: 18px; }
+        #search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 2px solid #edf2f7;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+        #search-input:focus { border-color: var(--accent-blue); }
+
+        .tag-filter-section { border-top: 1px solid #f1f3f5; padding-top: 15px; }
+        .tag-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; }
+        .filter-label { font-size: 9px; font-weight: 800; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.15em; margin: 0; }
+        .tag-toggle-btn { font-size: 11px; color: var(--accent-blue); font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .tag-toggle-btn::after { content: '▼'; font-size: 8px; transition: transform 0.3s; }
+        .tag-toggle-btn.is-open::after { transform: rotate(180deg); }
+        .selected-count-badge { background: var(--accent-blue); color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-left: 8px; display: none; }
+
+        #tag-container { display: none; flex-wrap: wrap; gap: 4px; margin-top: 15px; animation: fadeIn 0.3s ease; }
+        #tag-container.is-open { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hashtag {
+            padding: 3px 9px;
+            border-radius: 3px;
+            background: var(--tag-bg);
+            color: #495057;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid #e9ecef;
+        }
+        /* 年代タグのスタイル */
+        .hashtag.is-era { background: var(--era-tag-bg); border-color: #b3e5fc; color: #0277bd; }
+        .hashtag.selected { background: var(--tag-selected-bg) !important; color: #fff !important; border-color: var(--tag-selected-bg) !important; }
+
+        #data-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+        .ai-card { background: var(--bg-card); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; border: 1px solid #eee; transition: transform 0.2s; }
+        .ai-card:hover { transform: translateY(-3px); }
+        .thumb-wrapper { width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #000; cursor: pointer; }
+        .thumb-img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }
+        .thumb-wrapper:hover .thumb-img { opacity: 0.7; }
+        .card-body { padding: 14px; flex-grow: 1; display: flex; flex-direction: column; }
+        .song-title { font-weight: 800; font-size: 14px; margin: 0; line-height: 1.4; }
+        .artist-name { font-weight: 500; font-size: 12px; margin: 4px 0 2px 0; color: var(--text-muted); }
+        .view-count-info { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
+        .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; border-top: 1px solid #f8f9fa; padding-top: 10px; }
+        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
+        .card-tag-item.active { background: var(--accent-blue); color: #fff; }
+    </style>
+</head>
+<body>
+
+<div id="ai-ranking-app">
+    <div class="filter-wrapper">
+        <div class="search-box-wrapper">
+            <span class="filter-label">Keyword Search</span>
+            <input type="text" id="search-input" placeholder="アーティスト名、曲名、ハッシュタグで検索...">
+        </div>
+
+        <div class="tag-filter-section">
+            <div class="tag-header" onclick="toggleTagCollapse()">
+                <div style="display:flex; align-items:center;">
+                    <span class="filter-label">Popular Tags</span>
+                    <span id="selected-badge" class="selected-count-badge"></span>
+                </div>
+                <div id="toggle-btn-label" class="tag-toggle-btn">Tags</div>
+            </div>
+            <div id="tag-container"></div>
+        </div>
+    </div>
+
+    <div id="status-msg" style="text-align:center; padding:50px; color:#adb5bd;">Loading Gallery...</div>
+    <div id="data-container"></div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-// 2. ページ全体の読み込みが完了してから実行する
-window.onload = function() {
+(function() {
     const SUPABASE_URL = 'https://nnustlvukrdtoyoktmjt.supabase.co';
-    const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5udXN0bHZ1a3JkdG95b2t0bWp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNTY1MjgsImV4cCI6MjA4NTYzMjUyOH0.YlYGXKnO3TQ7Nj67lMHSUJAblkGRR61308yzIr6blRU';
-
-    // supabase オブジェクトが存在するかチェック
-    if (typeof supabase === 'undefined') {
-        console.error("Supabase library not loaded!");
-        return;
-    }
-
+    const RAW_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5udXN0bHZ1a3JkdG95b2t0bWp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNTY1MjgsImV4cCI6MjA4NTYzMjUyOH0.YlYGXKnO3TQ7Nj67lMHSUJAblkGRR61308yzIr6blRU';
+    const SUPABASE_KEY = ('e' + RAW_KEY.substring(1)).trim(); 
+    const TABLE_NAME = 'ai_song_youtube_ranking';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    let allData = [];
+    let selectedHashtags = [];
+    let searchQuery = "";
 
-    // ...以下、init関数の処理...
-    async function init() {
-        const { data, error } = await client.from('ai_song_youtube_ranking').select('*').limit(1);
-        if (error) console.error("Error:", error.message);
-        else console.log("Success:", data);
+    window.toggleTagCollapse = function() {
+        const container = document.getElementById('tag-container');
+        const btn = document.getElementById('toggle-btn-label');
+        container.classList.toggle('is-open');
+        btn.classList.toggle('is-open');
+    };
+
+    function formatViews(val) {
+        if (!val) return "0 views";
+        const num = Number(val);
+        if (num >= 100000000) return (num / 100000000).toFixed(1) + "億 views";
+        if (num >= 10000) return (num / 10000).toFixed(1) + "万 views";
+        return num.toLocaleString() + " views";
     }
+
+    // 年代タグかどうかを判定する関数
+    function isEraTag(tag) {
+        return /^\d{4}s?$/.test(tag) || tag.includes('年代');
+    }
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase();
+        applyFilter();
+    });
+
+    window.toggleTagSelection = function(tagName) {
+        if (selectedHashtags.includes(tagName)) {
+            selectedHashtags = selectedHashtags.filter(t => t !== tagName);
+        } else {
+            selectedHashtags.push(tagName);
+        }
+        updateBadge();
+        renderFilters();
+        applyFilter();
+    };
+
+    function updateBadge() {
+        const badge = document.getElementById('selected-badge');
+        if (selectedHashtags.length > 0) {
+            badge.style.display = 'inline-block';
+            badge.textContent = `${selectedHashtags.length} selected`;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+
+    async function init() {
+        try {
+            const { data, error } = await client.from(TABLE_NAME).select('*').order('rank', { ascending: true });
+            if (error) throw error;
+            allData = data.filter(item => item.Minor_Category !== '除外');
+            document.getElementById('status-msg').style.display = 'none';
+            renderFilters();
+            applyFilter(); 
+        } catch (e) {
+            document.getElementById('status-msg').innerHTML = `<p style="color:red;">Error: ${e.message}</p>`;
+        }
+    }
+
+    function renderFilters() {
+        const tagCountMap = {};
+        allData.forEach(item => {
+            if (item.hashtags) {
+                item.hashtags.split(',').forEach(t => {
+                    const clean = t.trim();
+                    if (clean) tagCountMap[clean] = (tagCountMap[clean] || 0) + 1;
+                });
+            }
+        });
+
+        // タグを「年代」と「その他（頻出順）」に分ける
+        const entries = Object.entries(tagCountMap);
+        const eraTags = entries.filter(e => isEraTag(e[0])).sort((a, b) => b[0].localeCompare(a[0])); // 年代順（降順）
+        const otherTags = entries.filter(e => !isEraTag(e[0])).sort((a, b) => b[1] - a[1]).slice(0, 45); // 頻出順
+
+        // 結合（年代を先に配置）
+        const combinedTags = [...eraTags, ...otherTags];
+
+        const tagContainer = document.getElementById('tag-container');
+        tagContainer.innerHTML = '';
+        combinedTags.forEach(([tagName, count]) => {
+            const isSelected = selectedHashtags.includes(tagName);
+            const eraClass = isEraTag(tagName) ? 'is-era' : '';
+            const span = document.createElement('span');
+            span.className = `hashtag ${eraClass} ${isSelected ? 'selected' : ''}`;
+            span.textContent = `${tagName} (${count})`;
+            span.onclick = () => toggleTagSelection(tagName);
+            tagContainer.appendChild(span);
+        });
+    }
+
+    function applyFilter() {
+        let filtered = allData;
+        if (selectedHashtags.length > 0) {
+            filtered = filtered.filter(item => {
+                if (!item.hashtags) return false;
+                return selectedHashtags.every(tag => item.hashtags.includes(tag));
+            });
+        }
+        if (searchQuery) {
+            filtered = filtered.filter(item => {
+                const artist = (item.Origin_artist_name || "").toLowerCase();
+                const song = (item.Origin_song_name || "").toLowerCase();
+                const tags = (item.hashtags || "").toLowerCase();
+                return artist.includes(searchQuery) || song.includes(searchQuery) || tags.includes(searchQuery);
+            });
+        }
+        renderCards(filtered);
+    }
+
+    function renderCards(items) {
+        const container = document.getElementById('data-container');
+        container.innerHTML = '';
+        if (items.length === 0) {
+            container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:80px; color:#adb5bd;">No matching results.</div>';
+            return;
+        }
+
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'ai-card';
+            const tagHtml = (item.hashtags || "").split(',')
+                .map(t => t.trim())
+                .filter(t => t)
+                .map(t => `<span class="card-tag-item ${selectedHashtags.includes(t) ? 'active' : ''}" onclick="event.stopPropagation(); toggleTagSelection('${t}')">${t}</span>`)
+                .join('');
+
+            card.innerHTML = `
+                <div class="thumb-wrapper" onclick="window.open('${item.url}', '_blank')">
+                    <img src="${item.thumbnail}" class="thumb-img" loading="lazy">
+                </div>
+                <div class="card-body">
+                    <p class="song-title">${item.Origin_song_name || 'Title Unknown'}</p>
+                    <p class="artist-name">${item.Origin_artist_name || 'Unknown Artist'}</p>
+                    <div class="view-count-info">${formatViews(item.views)}</div>
+                    <div class="card-tags">${tagHtml}</div>
+                </div>`;
+            container.appendChild(card);
+        });
+    }
+
     init();
-};
+})();
 </script>
+</body>
+</html>
+このコードをgithubでデプロイすると、各カードの下に表示されるはずのハッシュタグが表示されない
