@@ -9,38 +9,53 @@
             --text-main: #2d3436; --text-muted: #636e72; --bg-card: #ffffff;
             --tag-bg: #f1f3f5; --tag-selected-bg: #3498db; --accent-blue: #3498db; --era-tag-bg: #e1f5fe;
         }
-        body { background-color: #f8f9fa; margin: 0; font-family: -apple-system, sans-serif; }
+        body { background-color: #f8f9fa; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         #ai-ranking-app { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        /* 検索・フィルタ */
         .filter-wrapper { margin-bottom: 25px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-        #search-input { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #edf2f7; margin-bottom: 18px; box-sizing: border-box; }
+        #search-input { width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #edf2f7; margin-bottom: 18px; box-sizing: border-box; outline: none; }
+        #search-input:focus { border-color: var(--accent-blue); }
+        
         .tag-filter-section { border-top: 1px solid #f1f3f5; padding-top: 15px; }
         .tag-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .filter-label { font-size: 10px; font-weight: 800; color: #adb5bd; text-transform: uppercase; }
+        .filter-label { font-size: 10px; font-weight: 800; color: #adb5bd; text-transform: uppercase; letter-spacing: 0.1em; }
         .tag-toggle-btn { font-size: 11px; color: var(--accent-blue); font-weight: bold; }
+        
         #tag-container { display: none; flex-wrap: wrap; gap: 5px; margin-top: 15px; }
         #tag-container.is-open { display: flex; }
-        .hashtag { padding: 4px 10px; border-radius: 4px; background: var(--tag-bg); font-size: 11px; cursor: pointer; border: 1px solid #e9ecef; }
-        .hashtag.is-era { background: var(--era-tag-bg); color: #0277bd; }
-        .hashtag.selected { background: var(--tag-selected-bg) !important; color: #fff !important; }
+        
+        .hashtag { padding: 4px 10px; border-radius: 4px; background: var(--tag-bg); font-size: 11px; cursor: pointer; border: 1px solid #e9ecef; transition: 0.2s; }
+        .hashtag.is-era { background: var(--era-tag-bg); color: #0277bd; border-color: #b3e5fc; }
+        .hashtag.selected { background: var(--tag-selected-bg) !important; color: #fff !important; border-color: var(--tag-selected-bg) !important; }
+
+        /* カードレイアウト */
         #data-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-        .ai-card { background: var(--bg-card); border-radius: 10px; overflow: hidden; border: 1px solid #eee; transition: 0.2s; }
-        .thumb-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; cursor: pointer; }
-        .thumb-img { width: 100%; height: 100%; object-fit: cover; }
-        .card-body { padding: 14px; }
-        .song-title { font-weight: 800; font-size: 14px; margin: 0; }
-        .artist-name { font-size: 12px; margin: 4px 0; color: var(--text-muted); }
-        .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 10px; border-top: 1px solid #f8f9fa; padding-top: 10px; }
-        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; }
+        .ai-card { background: var(--bg-card); border-radius: 10px; overflow: hidden; border: 1px solid #eee; transition: transform 0.2s; display: flex; flex-direction: column; }
+        .ai-card:hover { transform: translateY(-3px); }
+        
+        .thumb-wrapper { width: 100%; aspect-ratio: 16/9; background: #000; cursor: pointer; position: relative; }
+        .thumb-img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
+        .thumb-wrapper:hover .thumb-img { opacity: 0.7; }
+        
+        .card-body { padding: 14px; flex-grow: 1; display: flex; flex-direction: column; }
+        .song-title { font-weight: 800; font-size: 14px; margin: 0; line-height: 1.4; }
+        .artist-name { font-size: 12px; margin: 4px 0 8px 0; color: var(--text-muted); }
+        .view-count-info { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+        
+        .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; border-top: 1px solid #f8f9fa; padding-top: 10px; }
+        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
+        .card-tag-item.active { background: var(--accent-blue); color: #fff; }
     </style>
 </head>
 <body>
     <div id="ai-ranking-app">
         <div class="filter-wrapper">
-            <input type="text" id="search-input" placeholder="アーティスト名、曲名、タグで検索...">
+            <input type="text" id="search-input" placeholder="アーティスト名、曲名、タグから検索...">
             <div class="tag-filter-section">
                 <div class="tag-header" onclick="toggleTagCollapse()">
-                    <span class="filter-label">Popular Tags</span>
-                    <span id="toggle-btn-label" class="tag-toggle-btn">Tags ▼</span>
+                    <span class="filter-label">Filter by Tags (Era & Genres)</span>
+                    <span id="toggle-btn-label" class="tag-toggle-btn">Select Tags ▼</span>
                 </div>
                 <div id="tag-container"></div>
             </div>
@@ -53,18 +68,28 @@
     <script>
     (function() {
         const SUPABASE_URL = 'https://nnustlvukrdtoyoktmjt.supabase.co';
+        // 直接提供されたキーを適用
         const SUPABASE_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5udXN0bHZ1a3JkdG95b2t0bWp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwNTY1MjgsImV4cCI6MjA4NTYzMjUyOH0.YlYGXKnO3TQ7Nj67lMHSUJAblkGRR61308yzIr6blRU';
+        
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
         let allData = [];
         let selectedHashtags = [];
         let searchQuery = "";
 
+        // ヘルパー: 年代タグ判定
         const isEraTag = (tag) => /^\d{4}s?$/.test(tag) || tag.includes('年代');
 
+        // 再生数フォーマット
+        const formatViews = (val) => {
+            const num = Number(val || 0);
+            if (num >= 100000000) return (num / 100000000).toFixed(1) + "億 views";
+            if (num >= 10000) return (num / 10000).toFixed(1) + "万 views";
+            return num.toLocaleString() + " views";
+        };
+
         window.toggleTagCollapse = () => {
-            const container = document.getElementById('tag-container');
-            container.classList.toggle('is-open');
+            document.getElementById('tag-container').classList.toggle('is-open');
         };
 
         window.toggleTagSelection = (tagName) => {
@@ -101,14 +126,20 @@
             const entries = Object.entries(tagMap);
             const eraTags = entries.filter(e => isEraTag(e[0])).sort((a, b) => b[0].localeCompare(a[0]));
             const otherTags = entries.filter(e => !isEraTag(e[0])).sort((a, b) => b[1] - a[1]).slice(0, 45);
+            
             document.getElementById('tag-container').innerHTML = [...eraTags, ...otherTags].map(([tag, count]) => {
                 const isSel = selectedHashtags.includes(tag);
-                return `<span class="hashtag ${isEraTag(tag)?'is-era':''} ${isSel?'selected':''}" onclick="toggleTagSelection('${tag}')">${tag} (${count})</span>`;
+                const eraClass = isEraTag(tag) ? 'is-era' : '';
+                return `<span class="hashtag ${eraClass} ${isSel ? 'selected' : ''}" onclick="toggleTagSelection('${tag}')">${tag} (${count})</span>`;
             }).join('');
         }
 
         function renderCards(items) {
             const container = document.getElementById('data-container');
+            if (items.length === 0) {
+                container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:80px; color:#adb5bd;">一致する結果がありません</div>';
+                return;
+            }
             container.innerHTML = items.map(item => `
                 <div class="ai-card">
                     <div class="thumb-wrapper" onclick="window.open('${item.url}', '_blank')">
@@ -117,22 +148,27 @@
                     <div class="card-body">
                         <p class="song-title">${item.Origin_song_name || 'Unknown'}</p>
                         <p class="artist-name">${item.Origin_artist_name || 'Unknown'}</p>
-                        <div class="card-tags">${(item.hashtags || "").split(',').map(t => `<span class="card-tag-item">${t.trim()}</span>`).join('')}</div>
+                        <div class="view-count-info">${formatViews(item.views)}</div>
+                        <div class="card-tags">${(item.hashtags || "").split(',').map(t => `<span class="card-tag-item ${selectedHashtags.includes(t.trim()) ? 'active' : ''}" onclick="event.stopPropagation(); toggleTagSelection('${t.trim()}')">${t.trim()}</span>`).join('')}</div>
                     </div>
                 </div>`).join('');
         }
 
         async function init() {
             try {
+                // テーブル名: ai_song_youtube_ranking
                 const { data, error } = await client.from('ai_song_youtube_ranking').select('*').order('rank', { ascending: true });
                 if (error) throw error;
+                
+                // 除外フラグのフィルタリング
                 allData = data.filter(i => i.Minor_Category !== '除外');
+                
                 document.getElementById('status-msg').style.display = 'none';
                 renderFilters();
                 applyFilter();
             } catch (e) {
-                console.error(e);
-                document.getElementById('status-msg').innerHTML = "Error loading data: " + e.message;
+                console.error("Fetch Error:", e);
+                document.getElementById('status-msg').innerHTML = "Error: " + e.message + "<br><small>SupabaseのRLS設定またはAPIキーを確認してください</small>";
             }
         }
         init();
