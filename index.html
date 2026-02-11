@@ -36,7 +36,7 @@
             z-index: 100;
             background: var(--header-blur-bg);
             backdrop-filter: blur(12px);
-            padding: 15px 0 10px;
+            padding: 20px 0 10px; /* 上の余白を少し広げました */
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
@@ -47,18 +47,18 @@
         }
         
         #main-content { 
-            padding-top: 210px; /* ロゴ拡大に合わせて調整 */
+            padding-top: 240px; /* ロゴ拡大に合わせてさらに広げました */
             padding-bottom: 60px; 
         }
 
-        /* ロゴエリア（左寄せ・拡大） */
+        /* ロゴエリア（左寄せ・さらに拡大） */
         .brand-area {
             display: flex;
-            justify-content: flex-start; /* 左寄せに変更 */
-            margin-bottom: 15px;
+            justify-content: flex-start;
+            margin-bottom: 20px;
         }
         .main-logo {
-            height: 64px; /* 52pxから64pxに拡大 */
+            height: 80px; /* 64pxから80pxへ大幅に拡大 */
             width: auto;
             display: block;
             object-fit: contain;
@@ -264,7 +264,7 @@
         .modal-inner { 
             position: relative; 
             width: 90%; 
-            max-width: 1280px; /* 1000pxから1280pxに拡大 */
+            max-width: 1280px; 
             aspect-ratio: 16/9; 
         }
         .modal-close { 
@@ -278,9 +278,9 @@
         #player-target iframe { width: 100%; height: 100%; border: none; border-radius: 8px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
 
         @media (max-width: 768px) {
-            .brand-area { justify-content: center; } /* モバイルでは中央寄せ */
-            .main-logo { height: 48px; }
-            #main-content { padding-top: 180px; }
+            .brand-area { justify-content: center; } 
+            .main-logo { height: 56px; } /* スマホでもやや大きめに */
+            #main-content { padding-top: 200px; }
             .modal-inner { width: 100%; }
         }
     </style>
