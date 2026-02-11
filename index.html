@@ -47,18 +47,18 @@
         }
         
         #main-content { 
-            padding-top: 190px; 
+            padding-top: 210px; /* ロゴ拡大に合わせて調整 */
             padding-bottom: 60px; 
         }
 
-        /* ロゴエリア */
+        /* ロゴエリア（左寄せ・拡大） */
         .brand-area {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start; /* 左寄せに変更 */
             margin-bottom: 15px;
         }
         .main-logo {
-            height: 52px;
+            height: 64px; /* 52pxから64pxに拡大 */
             width: auto;
             display: block;
             object-fit: contain;
@@ -91,7 +91,7 @@
             font-size: 14px; 
             outline: none; 
             box-sizing: border-box; 
-            transition: border-color 0.2s, background-color 0.2s;
+            transition: 0.2s;
         }
         .search-input:focus { 
             border-color: var(--accent-blue); 
@@ -158,7 +158,6 @@
             transition: 0.2s; 
         }
         .hashtag.is-era { background: var(--era-tag-bg); color: #0277bd; }
-        .hashtag:hover { background: #e9ecef; }
         .hashtag.selected { background: var(--tag-selected) !important; color: #fff !important; }
 
         /* カードグリッド */
@@ -175,12 +174,9 @@
             border: 1px solid var(--border-color); 
             display: flex; 
             flex-direction: column; 
-            transition: transform 0.2s ease, box-shadow 0.2s ease; 
+            transition: transform 0.2s ease; 
         }
-        .card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
-        }
+        .card:hover { transform: translateY(-5px); }
         
         .card-thumb { 
             position: relative; 
@@ -190,12 +186,7 @@
             cursor: pointer; 
             overflow: hidden; 
         }
-        .card-thumb img.thumb-img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            transition: opacity 0.3s; 
-        }
+        .card-thumb img.thumb-img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
         .card-thumb:hover img.thumb-img { opacity: 0.7; }
         .card-thumb::after { 
             content: '▶'; 
@@ -207,7 +198,6 @@
             font-size: 32px; 
             opacity: 0; 
             transition: 0.3s; 
-            z-index: 1; 
         }
         .card-thumb:hover::after { opacity: 1; }
 
@@ -256,17 +246,15 @@
             padding: 3px 8px; 
             border-radius: 4px; 
             cursor: pointer; 
-            transition: 0.2s; 
         }
-        .card-tag-item:hover { background: #e0efff; }
         .card-tag-item.active { background: var(--accent-blue); color: #fff; }
 
-        /* モーダル */
+        /* 動画プレイヤーモーダル（大型化） */
         .modal { 
             display: none; 
             position: fixed; 
             inset: 0; 
-            background: rgba(0,0,0,0.9); 
+            background: rgba(0,0,0,0.92); 
             z-index: 1000; 
             justify-content: center; 
             align-items: center; 
@@ -275,24 +263,25 @@
         .modal.active { display: flex; }
         .modal-inner { 
             position: relative; 
-            width: 95%; 
-            max-width: 1000px; 
+            width: 90%; 
+            max-width: 1280px; /* 1000pxから1280pxに拡大 */
             aspect-ratio: 16/9; 
         }
         .modal-close { 
             position: absolute; 
-            top: -45px; 
+            top: -50px; 
             right: 0; 
             color: #fff; 
-            font-size: 36px; 
+            font-size: 40px; 
             cursor: pointer; 
         }
-        #player-target iframe { width: 100%; height: 100%; border: none; border-radius: 8px; }
+        #player-target iframe { width: 100%; height: 100%; border: none; border-radius: 8px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
 
         @media (max-width: 768px) {
-            .main-logo { height: 40px; }
-            #main-content { padding-top: 170px; }
-            .grid { grid-template-columns: 1fr; }
+            .brand-area { justify-content: center; } /* モバイルでは中央寄せ */
+            .main-logo { height: 48px; }
+            #main-content { padding-top: 180px; }
+            .modal-inner { width: 100%; }
         }
     </style>
 </head>
@@ -334,9 +323,9 @@
     <div id="grid" class="grid"></div>
 </main>
 
-<div id="video-modal" class="modal" role="dialog" aria-modal="true">
+<div id="video-modal" class="modal">
     <div class="modal-inner">
-        <span class="modal-close" id="modal-close" aria-label="閉じる">&times;</span>
+        <span class="modal-close" id="modal-close">&times;</span>
         <div id="player-target"></div>
     </div>
 </div>
@@ -371,7 +360,7 @@
 
     const adjustPadding = () => {
         const height = els.header.offsetHeight;
-        els.main.style.paddingTop = `${height + 30}px`;
+        els.main.style.paddingTop = `${height + 25}px`;
     };
 
     const getYTId = (url) => url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/)?.[2] ?? null;
@@ -406,7 +395,6 @@
             });
         });
         const topTags = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0, CONFIG.MAX_TAGS);
-        
         const createTagEl = ([name, count]) => {
             const span = document.createElement('span');
             const active = store.selectedTags.includes(name);
@@ -415,13 +403,11 @@
             span.onclick = (e) => { e.stopPropagation(); toggleTag(name); };
             return span;
         };
-
         els.eraTags.innerHTML = '';
         els.genTags.innerHTML = '';
         topTags.forEach(tag => {
             (isEra(tag[0]) ? els.eraTags : els.genTags).appendChild(createTagEl(tag));
         });
-
         els.badge.style.display = store.selectedTags.length ? 'inline-block' : 'none';
         els.badge.textContent = store.selectedTags.length;
     };
