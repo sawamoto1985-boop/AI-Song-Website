@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prompt Tracks - AI Song Ranking</title>
+    
+    <title>Prompt Tracks</title>
+    <meta name="apple-mobile-web-app-title" content="Prompt Tracks">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <link rel="manifest" href="data:application/json,{%22name%22:%22Prompt%20Tracks%22,%22short_name%22:%22Prompt%20Tracks%22,%22display%22:%22standalone%22,%22start_url%22:%22/%22}">
+
     <style>
         :root {
             --text-main: #2d3436;
@@ -21,7 +28,7 @@
 
         body { background-color: var(--bg-body); margin: 0; font-family: -apple-system, system-ui, sans-serif; color: var(--text-main); overflow-x: hidden; }
 
-        /* --- ヘッダー（ロゴ拡大版） --- */
+        /* --- ヘッダー：巨大ロゴ対応 --- */
         .header-sticky {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             background: #ffffff; border-bottom: 1px solid var(--border-color);
@@ -30,16 +37,15 @@
         .header-container {
             max-width: 1400px; margin: 0 auto; padding: 0 20px;
             display: flex; align-items: center; 
-            height: 140px; /* ロゴに合わせて高さを高く設定 */
+            height: 140px; /* 巨大ロゴに合わせた高さ */
             position: relative;
         }
 
         .brand-area { display: flex; align-items: center; flex-shrink: 0; }
         .header-container.search-active .brand-area { display: none; }
         
-        /* ロゴ画像自体のサイズ指定 */
         .main-logo { 
-            height: 120px; /* ここを大きくしました */
+            height: 120px; /* 元の倍近いサイズ */
             width: auto; 
             display: block; 
             object-fit: contain;
@@ -83,7 +89,6 @@
         #main-content { padding-bottom: 60px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 0 20px; max-width: 1400px; margin: 0 auto; }
 
-        /* カードデザイン */
         .card { background: var(--bg-card); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid #eee; display: flex; flex-direction: column; transition: 0.2s; }
         .card:hover { transform: translateY(-4px); }
         
@@ -102,18 +107,19 @@
         .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
         .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
 
-        /* --- モーダル（拡大表示版） --- */
+        /* --- モーダル：全幅再生対応 --- */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 2000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         
         .modal-inner { 
             position: relative; 
             width: 95%; 
-            max-width: 1400px; 
+            max-width: 1400px; /* PCでの最大幅を拡大 */
             aspect-ratio: 16/9; 
             background: #000;
         }
 
+        /* 縦画面スマホでは横幅いっぱいに */
         @media (max-aspect-ratio: 16/9) {
             .modal-inner { width: 100%; max-width: none; }
         }
@@ -121,21 +127,21 @@
         .modal-close { 
             position: absolute; 
             top: -55px; 
-            right: 0; 
+            right: 10px; 
             color: #fff; 
             font-size: 45px; 
             cursor: pointer; 
+            z-index: 2100;
         }
         
         #player-target { width: 100%; height: 100%; }
         #player-target iframe { width: 100%; height: 100%; border: none; }
 
-        /* モバイル対応の調整 */
         @media (max-width: 768px) {
-            .header-container { height: 90px; } /* スマホでは少し小さく */
+            .header-container { height: 90px; }
             .main-logo { height: 75px; }
             .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-            .modal-close { top: -65px; right: 10px; }
+            .modal-close { top: -65px; }
         }
     </style>
 </head>
@@ -152,7 +158,7 @@
                 <button id="back-btn" class="back-btn">
                     <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                 </button>
-                <input type="text" id="search-input" class="search-input" placeholder="検索...">
+                <input type="text" id="search-input" class="search-input" placeholder="曲名、アーティストで検索...">
             </div>
             <button id="search-trigger" class="search-trigger">
                 <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
@@ -215,7 +221,6 @@
         main: document.getElementById('main-content')
     };
 
-    // メインコンテンツの余白をヘッダーの高さに合わせて自動調整
     const updateMainPadding = () => {
         els.main.style.paddingTop = (els.header.offsetHeight + 20) + "px";
     };
@@ -242,7 +247,7 @@
 
     els.tagToggle.onclick = () => {
         els.tagDrawer.classList.toggle('active');
-        updateMainPadding();
+        setTimeout(updateMainPadding, 100);
     };
 
     const init = async () => {
@@ -332,19 +337,14 @@
         document.body.style.overflow = 'hidden';
     };
 
-    document.getElementById('modal-close').onclick = () => {
+    const closeModal = () => {
         els.modal.classList.remove('active');
         els.player.innerHTML = '';
         document.body.style.overflow = '';
     };
 
-    els.modal.onclick = (e) => {
-        if(e.target === els.modal) {
-            els.modal.classList.remove('active');
-            els.player.innerHTML = '';
-            document.body.style.overflow = '';
-        }
-    };
+    document.getElementById('modal-close').onclick = closeModal;
+    els.modal.onclick = (e) => { if(e.target === els.modal) closeModal(); };
 
     init();
 })();
