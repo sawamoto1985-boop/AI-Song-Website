@@ -21,7 +21,7 @@
 
         body { background-color: var(--bg-body); margin: 0; font-family: -apple-system, system-ui, sans-serif; color: var(--text-main); overflow-x: hidden; }
 
-        /* --- ヘッダー（完全不透明） --- */
+        /* --- ヘッダー（ロゴ拡大版） --- */
         .header-sticky {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             background: #ffffff; border-bottom: 1px solid var(--border-color);
@@ -29,12 +29,22 @@
 
         .header-container {
             max-width: 1400px; margin: 0 auto; padding: 0 20px;
-            display: flex; align-items: center; height: 80px; position: relative;
+            display: flex; align-items: center; 
+            height: 140px; /* ロゴに合わせて高さを高く設定 */
+            position: relative;
         }
 
         .brand-area { display: flex; align-items: center; flex-shrink: 0; }
         .header-container.search-active .brand-area { display: none; }
-        .main-logo { height: 70px; width: auto; display: block; object-fit: contain; }
+        
+        /* ロゴ画像自体のサイズ指定 */
+        .main-logo { 
+            height: 120px; /* ここを大きくしました */
+            width: auto; 
+            display: block; 
+            object-fit: contain;
+            transition: 0.3s;
+        }
 
         .search-section { display: flex; align-items: center; flex-grow: 1; justify-content: flex-end; }
         .header-container.search-active .search-section { justify-content: center; width: 100%; }
@@ -46,10 +56,10 @@
         .header-container.search-active .search-bar-wrapper { display: flex; }
 
         .back-btn { background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; }
-        .search-input { flex-grow: 1; border: none; padding: 10px; font-size: 16px; outline: none; background: transparent; }
+        .search-input { flex-grow: 1; border: none; padding: 15px; font-size: 18px; outline: none; background: transparent; }
 
-        .search-trigger { background: none; border: none; cursor: pointer; padding: 12px; border-radius: 50%; display: flex; align-items: center; }
-        .search-trigger svg, .back-btn svg { width: 24px; height: 24px; fill: var(--text-main); }
+        .search-trigger { background: none; border: none; cursor: pointer; padding: 15px; border-radius: 50%; display: flex; align-items: center; }
+        .search-trigger svg, .back-btn svg { width: 32px; height: 32px; fill: var(--text-main); }
 
         /* --- フィルターエリア --- */
         .filter-card { background: #ffffff; border-bottom: 1px solid var(--border-color); }
@@ -73,7 +83,7 @@
         #main-content { padding-bottom: 60px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 0 20px; max-width: 1400px; margin: 0 auto; }
 
-        /* 動画カード */
+        /* カードデザイン */
         .card { background: var(--bg-card); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid #eee; display: flex; flex-direction: column; transition: 0.2s; }
         .card:hover { transform: translateY(-4px); }
         
@@ -92,44 +102,40 @@
         .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
         .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
 
-        /* --- モーダル（再生画面を拡大） --- */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; }
+        /* --- モーダル（拡大表示版） --- */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 2000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         
         .modal-inner { 
             position: relative; 
-            width: 90%; 
-            max-width: 1200px; /* PCでの最大幅 */
+            width: 95%; 
+            max-width: 1400px; 
             aspect-ratio: 16/9; 
             background: #000;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
-        /* スマホ等の縦向き画面では横幅いっぱいに広げる */
         @media (max-aspect-ratio: 16/9) {
-            .modal-inner {
-                width: 100%;
-                max-width: none;
-            }
+            .modal-inner { width: 100%; max-width: none; }
         }
 
         .modal-close { 
             position: absolute; 
-            top: -50px; 
+            top: -55px; 
             right: 0; 
             color: #fff; 
-            font-size: 40px; 
+            font-size: 45px; 
             cursor: pointer; 
-            user-select: none;
         }
         
         #player-target { width: 100%; height: 100%; }
         #player-target iframe { width: 100%; height: 100%; border: none; }
 
+        /* モバイル対応の調整 */
         @media (max-width: 768px) {
-            .main-logo { height: 50px; }
+            .header-container { height: 90px; } /* スマホでは少し小さく */
+            .main-logo { height: 75px; }
             .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-            .modal-close { top: -60px; right: 15px; } /* スマホで閉じやすく */
+            .modal-close { top: -65px; right: 10px; }
         }
     </style>
 </head>
@@ -146,7 +152,7 @@
                 <button id="back-btn" class="back-btn">
                     <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                 </button>
-                <input type="text" id="search-input" class="search-input" placeholder="曲名、アーティストで検索...">
+                <input type="text" id="search-input" class="search-input" placeholder="検索...">
             </div>
             <button id="search-trigger" class="search-trigger">
                 <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
@@ -209,8 +215,9 @@
         main: document.getElementById('main-content')
     };
 
+    // メインコンテンツの余白をヘッダーの高さに合わせて自動調整
     const updateMainPadding = () => {
-        els.main.style.paddingTop = (els.header.offsetHeight + 30) + "px";
+        els.main.style.paddingTop = (els.header.offsetHeight + 20) + "px";
     };
 
     const isEra = (t) => /^\d{4}s?$/.test(t) || t.includes('年代');
@@ -219,7 +226,6 @@
     els.searchTrigger.onclick = () => {
         els.container.classList.add('search-active');
         els.searchInput.focus();
-        updateMainPadding();
     };
 
     els.backBtn.onclick = () => {
@@ -227,7 +233,6 @@
         els.searchInput.value = "";
         store.query = "";
         applyFilter();
-        updateMainPadding();
     };
 
     els.searchInput.oninput = (e) => {
@@ -322,7 +327,6 @@
 
     window.openVideo = (url) => {
         const id = url.match(/v=([^&]+)/)?.[1] || url.split('/').pop();
-        // UI向上：自動再生かつロゴを控えめにする
         els.player.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
         els.modal.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -334,7 +338,6 @@
         document.body.style.overflow = '';
     };
 
-    // モーダル背景クリックでも閉じるように
     els.modal.onclick = (e) => {
         if(e.target === els.modal) {
             els.modal.classList.remove('active');
