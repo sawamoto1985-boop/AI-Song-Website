@@ -3,28 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <meta name="google-site-verification" content="xNuZrFHWLoU-zBruNRZIFA3Xu3sr62BaWgi2_CC32Rc" />
-
     <title>Prompt Tracks | AI生成音楽のライブラリ & 楽曲アーカイブ</title>
-    <meta name="description" content="AI生成音楽プロジェクト「Prompt Tracks」の全楽曲をまとめたアーカイブサイト。YouTubeで公開中の作品を一覧で管理・視聴できます。">
-    <meta name="keywords" content="AI音楽, AIソング, Prompt Tracks, Suno, Udio, YouTube, 音楽ライブラリ">
-
-    <meta property="og:title" content="Prompt Tracks | AI生成音楽のライブラリ">
-    <meta property="og:description" content="YouTubeで公開中のAI楽曲をまとめたアーカイブサイトです。">
-    <meta property="og:url" content="https://sawamoto1985-boop.github.io/AI-Song-Website/">
-    <meta property="og:site_name" content="Prompt Tracks">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="https://sawamoto1985-boop.github.io/AI-Song-Website/logo.png">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Prompt Tracks | AI生成音楽のライブラリ">
-    <meta name="twitter:description" content="YouTubeで公開中のAI楽曲をまとめたアーカイブサイトです。">
-
-    <meta name="apple-mobile-web-app-title" content="Prompt Tracks">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="data:application/json,{%22name%22:%22Prompt%20Tracks%22,%22short_name%22:%22Prompt%20Tracks%22,%22display%22:%22standalone%22,%22start_url%22:%22/%22}">
 
     <style>
         :root {
@@ -51,7 +31,7 @@
             overflow-x: hidden; 
         }
 
-        /* --- ヘッダー --- */
+        /* --- ヘッダー（初版復元） --- */
         .header-sticky {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             background: #ffffff; border-bottom: 1px solid var(--border-color);
@@ -71,7 +51,6 @@
             height: 120px; width: auto; display: block; object-fit: contain; transition: 0.3s;
         }
 
-        /* SEO用の隠し見出し */
         .visually-hidden {
             position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
             overflow: hidden; clip: rect(0,0,0,0); border: 0;
@@ -94,8 +73,26 @@
         /* --- フィルターエリア --- */
         .filter-card { background: #ffffff; border-bottom: 1px solid var(--border-color); }
         .filter-inner { padding: 0 20px; max-width: 1400px; margin: 0 auto; }
-        .tag-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 10px 0; }
-        .badge { background: var(--accent-blue); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; margin-left: 8px; display: none; }
+
+        .tag-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
+        
+        .filter-controls-left { display: flex; align-items: center; gap: 10px; }
+        .control-group { display: flex; align-items: center; gap: 4px; }
+
+        /* 最新追加ボタン：バッジと同じ青 */
+        .btn-latest { 
+            padding: 5px 12px; border-radius: 4px; background: #f0f7ff; border: 1px solid #c3dafe; 
+            color: var(--accent-blue); font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s;
+        }
+        .btn-latest.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+        
+        .badge { background: var(--accent-blue); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; display: none; pointer-events: none; }
+
+        .mini-clear-btn { display: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #b2bec3; line-height: 1; padding: 4px; transition: 0.2s; }
+        .mini-clear-btn:hover { color: #e74c3c; }
+
+        .toggle-btn { cursor: pointer; font-size: 11px; color: var(--accent-blue); font-weight: bold; }
+
         .tag-drawer { display: none; padding: 5px 0 15px; max-height: 300px; overflow-y: auto; }
         .tag-drawer.active { display: block; }
         .tag-group { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -127,25 +124,23 @@
         .card-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
 
         .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
-        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
+        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; transition: 0.2s; }
+        .card-tag-item:hover { background: var(--accent-blue); color: #fff; }
+        .card-tag-item.active { background: var(--tag-selected); color: #fff; }
 
         /* --- モーダル --- */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 2000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         .modal-inner { position: relative; width: 95%; max-width: 1400px; aspect-ratio: 16/9; background: #000; }
-        @media (max-aspect-ratio: 16/9) { .modal-inner { width: 100%; } }
-
         .modal-close { position: absolute; top: -55px; right: 10px; color: #fff; font-size: 45px; cursor: pointer; z-index: 2100; }
         #player-target { width: 100%; height: 100%; }
         #player-target iframe { width: 100%; height: 100%; border: none; }
 
-        /* --- レスポンシブ --- */
         @media (max-width: 768px) {
             .header-container { height: var(--header-h-sp); }
             .main-logo { height: 75px; }
-            #main-content { padding-top: calc(var(--header-h-sp) + 60px); }
+            #main-content { padding-top: calc(var(--header-h-sp) + 70px); }
             .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-            .modal-close { top: -65px; }
         }
     </style>
 </head>
@@ -154,31 +149,33 @@
 <header class="header-sticky" id="app-header">
     <div id="header-container" class="header-container">
         <div class="brand-area">
-            <h1 class="visually-hidden">Prompt Tracks - AI生成音楽ライブラリ</h1>
+            <h1 class="visually-hidden">Prompt Tracks</h1>
             <img src="logo.png" alt="Prompt Tracks" class="main-logo">
         </div>
 
         <div class="search-section">
             <div id="search-bar" class="search-bar-wrapper">
-                <button id="back-btn" class="back-btn" aria-label="戻る">
-                    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-                </button>
+                <button id="back-btn" class="back-btn"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
                 <input type="text" id="search-input" class="search-input" placeholder="曲名、アーティストで検索...">
             </div>
-            <button id="search-trigger" class="search-trigger" aria-label="検索">
-                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-            </button>
+            <button id="search-trigger" class="search-trigger"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
         </div>
     </div>
 
     <div class="filter-card">
         <div class="filter-inner">
-            <div class="tag-header" id="tag-toggle">
-                <div>
-                    <span style="font-size:11px; font-weight:bold; color:#adb5bd; text-transform: uppercase;">Hashtags</span>
-                    <span id="selected-badge" class="badge">0</span>
+            <div class="tag-header">
+                <div class="filter-controls-left">
+                    <div class="control-group">
+                        <button id="latest-btn" class="btn-latest">最新追加</button>
+                        <span id="latest-clear-btn" class="mini-clear-btn">✕</span>
+                    </div>
+                    <div class="control-group">
+                        <span id="selected-badge" class="badge">0</span>
+                        <span id="tag-clear-btn" class="mini-clear-btn">✕</span>
+                    </div>
                 </div>
-                <div id="toggle-label" style="font-size: 11px; color: var(--accent-blue); font-weight: bold;">すべて表示 ▼</div>
+                <div id="tag-toggle" class="toggle-btn">#すべて表示 ▼</div>
             </div>
             <div id="tag-drawer" class="tag-drawer">
                 <div id="tag-container" class="tag-group"></div>
@@ -209,7 +206,7 @@
     };
 
     const client = supabase.createClient(CONFIG.URL, 'e' + CONFIG.KEY.substring(1).trim());
-    let store = { allData: [], selectedTags: [], query: "" };
+    let store = { allData: [], selectedTags: [], query: "", showLatestOnly: false };
 
     const els = {
         header: document.getElementById('app-header'),
@@ -222,6 +219,9 @@
         tagToggle: document.getElementById('tag-toggle'),
         tagContainer: document.getElementById('tag-container'),
         badge: document.getElementById('selected-badge'),
+        tagClearBtn: document.getElementById('tag-clear-btn'),
+        latestBtn: document.getElementById('latest-btn'),
+        latestClearBtn: document.getElementById('latest-clear-btn'),
         modal: document.getElementById('video-modal'),
         player: document.getElementById('player-target'),
         main: document.getElementById('main-content')
@@ -229,95 +229,42 @@
 
     const updateMainPadding = () => {
         const h = els.header.offsetHeight;
-        els.main.style.paddingTop = (h + 30) + "px";
+        els.main.style.paddingTop = (h + 20) + "px";
+    };
+
+    const get5MinKey = (dateStr) => {
+        if (!dateStr) return "";
+        const d = new Date(dateStr);
+        const m = Math.floor(d.getMinutes() / 5) * 5;
+        return d.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit' }) + ":" + String(m).padStart(2, '0');
     };
 
     const isEra = (t) => /^\d{4}s?$/.test(t) || t.includes('年代');
     const formatViews = (n) => n >= 10000 ? `${(n/10000).toFixed(1)}万 views` : `${Number(n).toLocaleString()} views`;
 
-    els.searchTrigger.onclick = () => {
-        els.container.classList.add('search-active');
-        els.searchInput.focus();
-    };
+    const applyFilter = () => {
+        const latestTimeKey = store.allData.length 
+            ? get5MinKey(Math.max(...store.allData.map(i => new Date(i.created_at || 0))))
+            : null;
 
-    els.backBtn.onclick = () => {
-        els.container.classList.remove('search-active');
-        els.searchInput.value = "";
-        store.query = "";
-        applyFilter();
-    };
-
-    els.searchInput.oninput = (e) => {
-        store.query = e.target.value.toLowerCase();
-        applyFilter();
-    };
-
-    els.tagToggle.onclick = () => {
-        const isActive = els.tagDrawer.classList.toggle('active');
-        document.getElementById('toggle-label').textContent = isActive ? '閉じる ▲' : 'すべて表示 ▼';
-        setTimeout(updateMainPadding, 10);
-    };
-
-    const init = async () => {
-        try {
-            const { data, error } = await client.from('ai_song_youtube_ranking').select('*').order('rank', { ascending: true });
-            if (error) throw error;
-            
-            store.allData = data.filter(i => i.Minor_Category !== '除外');
-            document.getElementById('status').style.display = 'none';
-            
-            renderTags();
-            applyFilter();
-            updateMainPadding();
-            window.addEventListener('resize', updateMainPadding);
-        } catch (e) {
-            document.getElementById('status').textContent = 'データの読み込みに失敗しました。';
-        }
-    };
-
-    const renderTags = () => {
-        const counts = {};
-        store.allData.forEach(i => (i.hashtags || "").split(',').forEach(t => {
-            const tag = t.trim();
-            if(tag) counts[tag] = (counts[tag] || 0) + 1;
-        }));
-
-        const sortedTags = Object.entries(counts).sort((a, b) => {
-            const aEra = isEra(a[0]), bEra = isEra(b[0]);
-            return aEra === bEra ? b[1] - a[1] : aEra ? -1 : 1;
-        }).slice(0, 60);
-
-        els.tagContainer.innerHTML = '';
-        sortedTags.forEach(([tag, count]) => {
-            const span = document.createElement('span');
-            span.className = `hashtag ${isEra(tag) ? 'is-era' : ''}`;
-            span.textContent = `${tag} (${count})`;
-            span.onclick = () => toggleTag(tag);
-            els.tagContainer.appendChild(span);
+        const filtered = store.allData.filter(i => {
+            const matchTags = store.selectedTags.every(t => (i.hashtags || "").includes(t));
+            const matchQuery = [i.Origin_song_name, i.Origin_artist_name, i.hashtags].some(f => (f || "").toLowerCase().includes(store.query));
+            const matchLatest = !store.showLatestOnly || (get5MinKey(i.created_at) === latestTimeKey);
+            return matchTags && matchQuery && matchLatest;
         });
-    };
 
-    const toggleTag = (name) => {
-        store.selectedTags = store.selectedTags.includes(name) 
-            ? store.selectedTags.filter(t => t !== name) 
-            : [...store.selectedTags, name];
-        
+        els.latestBtn.classList.toggle('active', store.showLatestOnly);
+        els.latestClearBtn.style.display = store.showLatestOnly ? 'inline-block' : 'none';
+        els.badge.textContent = store.selectedTags.length;
+        els.badge.style.display = store.selectedTags.length ? 'inline-block' : 'none';
+        els.tagClearBtn.style.display = store.selectedTags.length ? 'inline-block' : 'none';
+
         document.querySelectorAll('.hashtag').forEach(h => {
             const cleanText = h.textContent.split(' (')[0];
             h.classList.toggle('selected', store.selectedTags.includes(cleanText));
         });
-        
-        els.badge.textContent = store.selectedTags.length;
-        els.badge.style.display = store.selectedTags.length ? 'inline-block' : 'none';
-        applyFilter();
-    };
 
-    const applyFilter = () => {
-        const filtered = store.allData.filter(i => {
-            const matchTags = store.selectedTags.every(t => (i.hashtags || "").includes(t));
-            const matchQuery = [i.Origin_song_name, i.Origin_artist_name, i.hashtags].some(f => (f || "").toLowerCase().includes(store.query));
-            return matchTags && matchQuery;
-        });
         renderCards(filtered);
     };
 
@@ -333,7 +280,7 @@
                     <img src="${CONFIG.YT_LOGO}" class="yt-brand-top" alt="YouTube">
                     <h3 class="card-title">${i.Origin_song_name || 'Untitled'}</h3>
                     <p class="card-artist">${i.Origin_artist_name || 'Unknown'}</p>
-                    <div class="card-meta">${formatViews(i.views)}</div>
+                    <div class="card-meta"><span>${formatViews(i.views)}</span></div>
                     <div class="card-tags">
                         ${tags.map(t => {
                             const cleanT = t.trim();
@@ -342,8 +289,45 @@
                         }).join('')}
                     </div>
                 </div>
-            </article>
-        `}).join('');
+            </article>`}).join('');
+    };
+
+    els.latestBtn.onclick = () => { store.showLatestOnly = !store.showLatestOnly; applyFilter(); };
+    els.latestClearBtn.onclick = () => { store.showLatestOnly = false; applyFilter(); };
+    els.tagClearBtn.onclick = () => { store.selectedTags = []; applyFilter(); };
+    els.searchTrigger.onclick = () => { els.container.classList.add('search-active'); els.searchInput.focus(); };
+    els.backBtn.onclick = () => { els.container.classList.remove('search-active'); els.searchInput.value = ""; store.query = ""; applyFilter(); };
+    els.searchInput.oninput = (e) => { store.query = e.target.value.toLowerCase(); applyFilter(); };
+    els.tagToggle.onclick = () => {
+        const isActive = els.tagDrawer.classList.toggle('active');
+        els.tagToggle.textContent = isActive ? '#閉じる ▲' : '#すべて表示 ▼';
+        setTimeout(updateMainPadding, 10);
+    };
+
+    window.toggleTag = (name) => {
+        store.selectedTags = store.selectedTags.includes(name) ? store.selectedTags.filter(t => t !== name) : [...store.selectedTags, name];
+        applyFilter();
+    };
+
+    const init = async () => {
+        try {
+            const { data, error } = await client.from('ai_song_youtube_ranking').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            store.allData = data.filter(i => i.Minor_Category !== '除外');
+            document.getElementById('status').style.display = 'none';
+            
+            const counts = {};
+            store.allData.forEach(i => (i.hashtags || "").split(',').forEach(t => { if(t.trim()) counts[t.trim()] = (counts[t.trim()] || 0) + 1; }));
+            const sortedTags = Object.entries(counts).sort((a, b) => {
+                const aEra = isEra(a[0]), bEra = isEra(b[0]);
+                return aEra === bEra ? b[1] - a[1] : aEra ? -1 : 1;
+            }).slice(0, 60);
+            els.tagContainer.innerHTML = sortedTags.map(([tag, count]) => `<span class="hashtag ${isEra(tag) ? 'is-era' : ''}" onclick="toggleTag('${tag}')">${tag} (${count})</span>`).join('');
+            
+            applyFilter();
+            updateMainPadding();
+            window.addEventListener('resize', updateMainPadding);
+        } catch (e) { document.getElementById('status').textContent = '失敗しました。'; }
     };
 
     window.openVideo = (url) => {
@@ -352,15 +336,7 @@
         els.modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     };
-
-    const closeModal = () => {
-        els.modal.classList.remove('active');
-        els.player.innerHTML = '';
-        document.body.style.overflow = '';
-    };
-
-    document.getElementById('modal-close').onclick = closeModal;
-    els.modal.onclick = (e) => { if(e.target === els.modal) closeModal(); };
+    document.getElementById('modal-close').onclick = () => { els.modal.classList.remove('active'); els.player.innerHTML = ''; document.body.style.overflow = ''; };
 
     init();
 })();
