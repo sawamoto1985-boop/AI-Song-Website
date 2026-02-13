@@ -31,7 +31,7 @@
             overflow-x: hidden; 
         }
 
-        /* --- ヘッダー（初版復元） --- */
+        /* --- ヘッダー --- */
         .header-sticky {
             position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
             background: #ffffff; border-bottom: 1px solid var(--border-color);
@@ -76,10 +76,9 @@
 
         .tag-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
         
-        .filter-controls-left { display: flex; align-items: center; gap: 10px; }
+        .filter-controls-left { display: flex; align-items: center; } 
         .control-group { display: flex; align-items: center; gap: 4px; }
 
-        /* 最新追加ボタン：バッジと同じ青 */
         .btn-latest { 
             padding: 5px 12px; border-radius: 4px; background: #f0f7ff; border: 1px solid #c3dafe; 
             color: var(--accent-blue); font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s;
@@ -90,6 +89,16 @@
 
         .mini-clear-btn { display: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #b2bec3; line-height: 1; padding: 4px; transition: 0.2s; }
         .mini-clear-btn:hover { color: #e74c3c; }
+
+        /* ソートトグルスイッチ */
+        .sort-toggle { 
+            display: flex; background: #f1f3f5; border-radius: 15px; padding: 2px; border: 1px solid #eee; 
+            margin-left: 10px; /* バッジがあるため少し間隔を調整 */
+        }
+        .sort-opt { 
+            font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 13px; cursor: pointer; color: #b2bec3; transition: 0.2s;
+        }
+        .sort-opt.active { background: #fff; color: var(--accent-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         .toggle-btn { cursor: pointer; font-size: 11px; color: var(--accent-blue); font-weight: bold; }
 
@@ -141,6 +150,7 @@
             .main-logo { height: 75px; }
             #main-content { padding-top: calc(var(--header-h-sp) + 70px); }
             .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+            .sort-toggle { margin-left: 6px; }
         }
     </style>
 </head>
@@ -158,7 +168,7 @@
                 <button id="back-btn" class="back-btn"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
                 <input type="text" id="search-input" class="search-input" placeholder="曲名、アーティストで検索...">
             </div>
-            <button id="search-trigger" class="search-trigger"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
+            <button id="search-trigger" class="search-trigger"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 10 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
         </div>
     </div>
 
@@ -170,9 +180,13 @@
                         <button id="latest-btn" class="btn-latest">最新追加</button>
                         <span id="latest-clear-btn" class="mini-clear-btn">✕</span>
                     </div>
-                    <div class="control-group">
+                    <div class="control-group" style="margin-left: 15px;">
                         <span id="selected-badge" class="badge">0</span>
                         <span id="tag-clear-btn" class="mini-clear-btn">✕</span>
+                    </div>
+                    <div class="sort-toggle">
+                        <span id="sort-views" class="sort-opt active">再生数順</span>
+                        <span id="sort-random" class="sort-opt">ランダム</span>
                     </div>
                 </div>
                 <div id="tag-toggle" class="toggle-btn">#すべて表示 ▼</div>
@@ -206,7 +220,7 @@
     };
 
     const client = supabase.createClient(CONFIG.URL, 'e' + CONFIG.KEY.substring(1).trim());
-    let store = { allData: [], selectedTags: [], query: "", showLatestOnly: false };
+    let store = { allData: [], selectedTags: [], query: "", showLatestOnly: false, sortMode: 'views' };
 
     const els = {
         header: document.getElementById('app-header'),
@@ -224,7 +238,9 @@
         latestClearBtn: document.getElementById('latest-clear-btn'),
         modal: document.getElementById('video-modal'),
         player: document.getElementById('player-target'),
-        main: document.getElementById('main-content')
+        main: document.getElementById('main-content'),
+        sortViews: document.getElementById('sort-views'),
+        sortRandom: document.getElementById('sort-random')
     };
 
     const updateMainPadding = () => {
@@ -247,18 +263,27 @@
             ? get5MinKey(Math.max(...store.allData.map(i => new Date(i.created_at || 0))))
             : null;
 
-        const filtered = store.allData.filter(i => {
+        let filtered = store.allData.filter(i => {
             const matchTags = store.selectedTags.every(t => (i.hashtags || "").includes(t));
             const matchQuery = [i.Origin_song_name, i.Origin_artist_name, i.hashtags].some(f => (f || "").toLowerCase().includes(store.query));
             const matchLatest = !store.showLatestOnly || (get5MinKey(i.created_at) === latestTimeKey);
             return matchTags && matchQuery && matchLatest;
         });
 
+        if (store.sortMode === 'views') {
+            filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
+        } else {
+            filtered.sort(() => Math.random() - 0.5);
+        }
+
         els.latestBtn.classList.toggle('active', store.showLatestOnly);
         els.latestClearBtn.style.display = store.showLatestOnly ? 'inline-block' : 'none';
         els.badge.textContent = store.selectedTags.length;
         els.badge.style.display = store.selectedTags.length ? 'inline-block' : 'none';
         els.tagClearBtn.style.display = store.selectedTags.length ? 'inline-block' : 'none';
+
+        els.sortViews.classList.toggle('active', store.sortMode === 'views');
+        els.sortRandom.classList.toggle('active', store.sortMode === 'random');
 
         document.querySelectorAll('.hashtag').forEach(h => {
             const cleanText = h.textContent.split(' (')[0];
@@ -298,6 +323,10 @@
     els.searchTrigger.onclick = () => { els.container.classList.add('search-active'); els.searchInput.focus(); };
     els.backBtn.onclick = () => { els.container.classList.remove('search-active'); els.searchInput.value = ""; store.query = ""; applyFilter(); };
     els.searchInput.oninput = (e) => { store.query = e.target.value.toLowerCase(); applyFilter(); };
+    
+    els.sortViews.onclick = () => { store.sortMode = 'views'; applyFilter(); };
+    els.sortRandom.onclick = () => { store.sortMode = 'random'; applyFilter(); };
+
     els.tagToggle.onclick = () => {
         const isActive = els.tagDrawer.classList.toggle('active');
         els.tagToggle.textContent = isActive ? '#閉じる ▲' : '#すべて表示 ▼';
