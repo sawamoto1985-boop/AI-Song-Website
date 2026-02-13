@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+    <meta name="google-site-verification" content="xNuZrFHWLoU-zBruNRZIFA3Xu3sr62BaWgi2_CC32Rc" />
+
     <title>Prompt Tracks | AI生成音楽のライブラリ & 楽曲アーカイブ</title>
     <meta name="description" content="AI生成音楽プロジェクト「Prompt Tracks」の全楽曲をまとめたアーカイブサイト。YouTubeで公開中の作品を一覧で管理・視聴できます。">
     <meta name="keywords" content="AI音楽, AIソング, Prompt Tracks, Suno, Udio, YouTube, 音楽ライブラリ">
@@ -225,7 +227,6 @@
         main: document.getElementById('main-content')
     };
 
-    // 余白の自動調整
     const updateMainPadding = () => {
         const h = els.header.offsetHeight;
         els.main.style.paddingTop = (h + 30) + "px";
@@ -234,7 +235,6 @@
     const isEra = (t) => /^\d{4}s?$/.test(t) || t.includes('年代');
     const formatViews = (n) => n >= 10000 ? `${(n/10000).toFixed(1)}万 views` : `${Number(n).toLocaleString()} views`;
 
-    // 検索イベント
     els.searchTrigger.onclick = () => {
         els.container.classList.add('search-active');
         els.searchInput.focus();
@@ -252,7 +252,6 @@
         applyFilter();
     };
 
-    // フィルター開閉
     els.tagToggle.onclick = () => {
         const isActive = els.tagDrawer.classList.toggle('active');
         document.getElementById('toggle-label').textContent = isActive ? '閉じる ▲' : 'すべて表示 ▼';
@@ -303,7 +302,6 @@
             ? store.selectedTags.filter(t => t !== name) 
             : [...store.selectedTags, name];
         
-        // タグの見た目を更新
         document.querySelectorAll('.hashtag').forEach(h => {
             const cleanText = h.textContent.split(' (')[0];
             h.classList.toggle('selected', store.selectedTags.includes(cleanText));
