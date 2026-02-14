@@ -4,7 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="xNuZrFHWLoU-zBruNRZIFA3Xu3sr62BaWgi2_CC32Rc" />
-    <title>Prompt Tracks | AI生成音楽のライブラリ & 楽曲アーカイブ</title>
+    
+    <title>Prompt Tracks | Suno/Udio AI生成音楽のプロンプト共有・人気楽曲アーカイブ</title>
+    <meta name="description" content="最新のAI生成音楽（Suno AI / Udio）の人気楽曲やプロンプト情報をアーカイブ。自分だけのお気に入りリストを作成して、AI音楽のトレンドをチェックしよう。">
+    <meta property="og:title" content="Prompt Tracks | AI生成音楽のライブラリ & 楽曲アーカイブ">
+    <meta property="og:description" content="AI音楽のトレンド楽曲とお気に入り機能。プロンプトの研究に。">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@Prompttracks">
 
     <style>
         :root {
@@ -45,11 +52,13 @@
             position: relative;
         }
 
+        /* ブランドエリア：ロゴの右側にボタンを配置 */
         .brand-area { display: flex; align-items: center; flex-shrink: 0; gap: 8px; }
         .header-container.search-active .brand-area { display: none; }
         
         .main-logo { height: 120px; width: auto; display: block; object-fit: contain; }
 
+        /* ロゴ横の小型円形ボタン */
         .mini-circle-icon {
             background: var(--tag-bg); border: none; border-radius: 50%;
             width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
@@ -83,6 +92,7 @@
         .icon-circle-btn.is-active { color: var(--accent-red); }
         .icon-circle-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
+        /* お気に入りカウントバッジ：常に白文字に黒縁取りで表示 */
         .fav-count-badge {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%);
             font-size: 11px; font-weight: 900; color: #fff;
@@ -140,6 +150,7 @@
         .card-content { padding: 14px; flex-grow: 1; display: flex; flex-direction: column; position: relative; }
         .yt-brand-top { position: absolute; top: 14px; right: 14px; height: 11px; }
         
+        /* カード内お気に入り */
         .card-fav-btn {
             position: absolute; top: 32px; right: 14px; z-index: 10;
             background: none; border: none; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: flex-end; cursor: pointer; color: #dfe6e9; transition: 0.2s;
@@ -170,6 +181,7 @@
             .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
             .brand-area { gap: 4px; }
             .mini-circle-icon { width: 28px; height: 28px; }
+            .mini-circle-icon svg { width: 14px; height: 14px; }
         }
     </style>
 </head>
@@ -289,7 +301,6 @@
 
     const updateMainPadding = () => { els.main.style.paddingTop = (els.header.offsetHeight + 20) + "px"; };
 
-    // 【復元】年代判定ロジック
     const isEra = (t) => /^\d{4}s?$/.test(t) || t.includes('年代');
 
     const get5MinKey = (dateStr) => {
@@ -301,10 +312,13 @@
 
     const formatViews = (n) => n >= 10000 ? `${(n/10000).toFixed(1)}万 views` : `${Number(n).toLocaleString()} views`;
 
+    // バッジを常に同期・表示する独立した関数
     const updateFavBadge = () => {
         const count = store.favorites.length;
         els.favCount.textContent = count > 0 ? count : "";
         els.favCount.style.display = count > 0 ? "block" : "none";
+        
+        // 0件の場合はボタンを無効化
         if (count === 0) {
             store.showFavoritesOnly = false;
             els.favFilterBtn.disabled = true;
@@ -317,7 +331,7 @@
         store.favorites = store.favorites.includes(url) ? store.favorites.filter(id => id !== url) : [...store.favorites, url];
         localStorage.setItem('pt_favs', JSON.stringify(store.favorites));
         updateFavBadge();
-        applyFilter(false);
+        applyFilter(false); // お気に入り解除時に順序が崩れないよう制御
     };
 
     const applyFilter = (shouldReshuffle = true) => {
@@ -353,11 +367,6 @@
         els.sortViews.classList.toggle('active', store.sortMode === 'views');
         els.sortRandom.classList.toggle('active', store.sortMode === 'random');
 
-        document.querySelectorAll('.hashtag').forEach(h => {
-            const tagText = h.textContent.split(' (')[0];
-            h.classList.toggle('selected', store.selectedTags.includes(tagText));
-        });
-
         renderCards(store.displayData);
     };
 
@@ -384,20 +393,23 @@
             </article>`}).join('');
     };
 
-    els.siteBookmarkBtn.onclick = () => {
-        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-        const msg = isMac ? 'Command + D キーを押すとブックマークできます。' : 'Ctrl + D キーを押すとブックマークできます。';
-        if (navigator.share) { navigator.share({ title: document.title, url: location.href }).catch(() => alert(msg)); } 
-        else { alert(msg); }
+    const closeSearch = () => { 
+        els.container.classList.remove('search-active'); 
+        els.searchInput.value = ""; store.query = ""; applyFilter(); 
     };
 
-    const closeSearch = () => { els.container.classList.remove('search-active'); els.searchInput.value = ""; store.query = ""; applyFilter(); };
     els.searchTrigger.onclick = () => { els.container.classList.add('search-active'); els.searchInput.focus(); };
     els.backBtn.onclick = closeSearch;
-    els.searchInput.onblur = () => { setTimeout(() => { if (els.searchInput.value.trim() === "" && els.container.classList.contains('search-active')) closeSearch(); }, 150); };
+    els.searchInput.onblur = () => { 
+        setTimeout(() => { if (els.searchInput.value.trim() === "" && els.container.classList.contains('search-active')) closeSearch(); }, 150);
+    };
     els.searchInput.oninput = (e) => { store.query = e.target.value.toLowerCase(); applyFilter(); };
-    
-    els.latestBtn.onclick = () => { store.showLatestOnly = !store.showLatestOnly; if(store.showLatestOnly) store.showFavoritesOnly = false; applyFilter(); };
+
+    els.latestBtn.onclick = () => { 
+        store.showLatestOnly = !store.showLatestOnly;
+        if(store.showLatestOnly) store.showFavoritesOnly = false;
+        applyFilter(); 
+    };
     els.latestClearBtn.onclick = () => { store.showLatestOnly = false; applyFilter(); };
     
     els.favFilterBtn.onclick = () => { 
@@ -411,6 +423,7 @@
     els.tagClearBtn.onclick = () => { store.selectedTags = []; applyFilter(); };
     els.sortViews.onclick = () => { store.sortMode = 'views'; applyFilter(); };
     els.sortRandom.onclick = () => { store.sortMode = 'random'; applyFilter(true); };
+
     els.tagToggle.onclick = () => {
         const isActive = els.tagDrawer.classList.toggle('active');
         els.tagToggle.textContent = isActive ? '#閉じる ▲' : '#すべて表示 ▼';
@@ -423,8 +436,15 @@
         applyFilter(); 
     };
 
+    els.siteBookmarkBtn.onclick = () => {
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const msg = isMac ? 'Command + D キーを押すとブックマークできます。' : 'Ctrl + D キーを押すとブックマークできます。';
+        if (navigator.share) { navigator.share({ title: document.title, url: location.href }).catch(() => alert(msg)); } 
+        else { alert(msg); }
+    };
+
     const init = async () => {
-        updateFavBadge();
+        updateFavBadge(); // 読み込み直後にバッジ同期
         try {
             const { data, error } = await client.from('ai_song_youtube_ranking').select('*').order('created_at', { ascending: false });
             if (error) throw error;
@@ -433,7 +453,7 @@
             const counts = {};
             store.allData.forEach(i => (i.hashtags || "").split(',').forEach(t => { if(t.trim()) counts[t.trim()] = (counts[t.trim()] || 0) + 1; }));
             
-            // 【復元】ハッシュタグの並び順ロジック
+            // 初版の年代優先ソートロジック
             const sortedTags = Object.entries(counts).sort((a, b) => {
                 const aEra = isEra(a[0]), bEra = isEra(b[0]);
                 return aEra === bEra ? b[1] - a[1] : aEra ? -1 : 1;
