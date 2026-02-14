@@ -45,11 +45,13 @@
             position: relative;
         }
 
-        .brand-area { display: flex; align-items: center; flex-shrink: 0; gap: 8px; }
+        /* ロゴとサブボタンの並び（右側にボタン） */
+        .brand-area { display: flex; align-items: center; flex-shrink: 0; gap: 10px; }
         .header-container.search-active .brand-area { display: none; }
         
         .main-logo { height: 120px; width: auto; display: block; object-fit: contain; }
 
+        /* ロゴ横の小型アイコンボタン（背景あり） */
         .mini-circle-icon {
             background: var(--tag-bg); border: none; border-radius: 50%;
             width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
@@ -82,11 +84,7 @@
         .icon-circle-btn svg { width: 32px; height: 32px; fill: currentColor; }
         .icon-circle-btn.is-active { color: var(--accent-red); }
 
-        /* お気に入り0件の時のスタイル */
-        .icon-circle-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
+        .icon-circle-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .fav-count-badge {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%);
@@ -107,7 +105,7 @@
 
         .btn-latest { 
             padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;
-            background: #f0f7ff; border: 1px solid #c3dafe; color: var(--accent-blue);
+            background: #f0f7ff; border: 1px solid #c3dafe; color: var(--accent-blue); transition: 0.2s;
         }
         .btn-latest.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
         
@@ -124,7 +122,7 @@
         .tag-drawer.active { display: block; }
         .tag-group { display: flex; flex-wrap: wrap; gap: 6px; }
 
-        .hashtag { padding: 4px 10px; border-radius: 4px; background: var(--tag-bg); font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #eee; }
+        .hashtag { padding: 4px 10px; border-radius: 4px; background: var(--tag-bg); font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #eee; transition: 0.2s; }
         .hashtag.selected { background: var(--tag-selected) !important; color: #fff !important; }
 
         /* --- メインコンテンツ --- */
@@ -171,7 +169,7 @@
             .main-logo { height: 75px; }
             #main-content { padding-top: calc(var(--header-h-sp) + 70px); }
             .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-            .brand-area { gap: 4px; }
+            .brand-area { gap: 6px; }
             .mini-circle-icon { width: 28px; height: 28px; }
             .mini-circle-icon svg { width: 14px; height: 14px; }
         }
@@ -182,13 +180,13 @@
 <header class="header-sticky" id="app-header">
     <div id="header-container" class="header-container">
         <div class="brand-area">
+            <img src="logo.png" alt="Prompt Tracks" class="main-logo">
             <button id="site-bookmark-btn" class="mini-circle-icon" title="サイトをブックマーク">
                 <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
             </button>
             <a href="https://x.com/Prompttracks" target="_blank" rel="noopener" class="mini-circle-icon" title="公式Xをフォロー">
                 <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
             </a>
-            <img src="logo.png" alt="Prompt Tracks" class="main-logo">
         </div>
 
         <div class="search-section">
@@ -256,16 +254,7 @@
     };
 
     const client = supabase.createClient(CONFIG.URL, 'e' + CONFIG.KEY.substring(1).trim());
-    let store = { 
-        allData: [], 
-        displayData: [], 
-        selectedTags: [], 
-        query: "", 
-        showLatestOnly: false, 
-        showFavoritesOnly: false, 
-        sortMode: 'views', 
-        favorites: JSON.parse(localStorage.getItem('pt_favs') || '[]') 
-    };
+    let store = { allData: [], displayData: [], selectedTags: [], query: "", showLatestOnly: false, showFavoritesOnly: false, sortMode: 'views', favorites: JSON.parse(localStorage.getItem('pt_favs') || '[]') };
 
     const els = {
         header: document.getElementById('app-header'),
@@ -306,8 +295,6 @@
         const count = store.favorites.length;
         els.favCount.textContent = count > 0 ? count : "";
         els.favCount.style.display = count > 0 ? "block" : "none";
-        
-        // 0件の場合はボタンを無効化
         if (count === 0) {
             store.showFavoritesOnly = false;
             els.favFilterBtn.disabled = true;
@@ -402,13 +389,19 @@
     };
     els.searchInput.oninput = (e) => { store.query = e.target.value.toLowerCase(); applyFilter(); };
     
-    els.latestBtn.onclick = () => { store.showLatestOnly = !store.showLatestOnly; applyFilter(); };
-    els.latestClearBtn.onclick = () => { store.showLatestOnly = false; applyFilter(); };
+    els.latestBtn.onclick = () => { 
+        store.showLatestOnly = !store.showLatestOnly;
+        if(store.showLatestOnly) store.showFavoritesOnly = false;
+        applyFilter(); 
+    };
     
-    // お気に入りボタンのクリックイベント（0件ガード付き）
     els.favFilterBtn.onclick = () => { 
         if (store.favorites.length > 0) {
             store.showFavoritesOnly = !store.showFavoritesOnly; 
+            if(store.showFavoritesOnly) {
+                store.showLatestOnly = false;
+                store.selectedTags = [];
+            }
             applyFilter(); 
         }
     };
@@ -422,7 +415,11 @@
         setTimeout(updateMainPadding, 10);
     };
 
-    window.toggleTag = (name) => { store.selectedTags = store.selectedTags.includes(name) ? store.selectedTags.filter(t => t !== name) : [...store.selectedTags, name]; applyFilter(); };
+    window.toggleTag = (name) => { 
+        store.selectedTags = store.selectedTags.includes(name) ? store.selectedTags.filter(t => t !== name) : [...store.selectedTags, name];
+        if(store.selectedTags.length > 0) store.showFavoritesOnly = false;
+        applyFilter(); 
+    };
 
     const init = async () => {
         updateFavBadge();
