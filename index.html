@@ -17,6 +17,7 @@
             --era-tag-text: #0277bd;
             --tag-selected: #3498db;
             --accent-blue: #3498db;
+            --accent-red: #e74c3c;
             --border-color: #edf2f7;
             --shadow: 0 4px 15px rgba(0,0,0,0.05);
             --header-h-pc: 140px;
@@ -44,19 +45,21 @@
             position: relative;
         }
 
-        .brand-area { display: flex; align-items: center; flex-shrink: 0; }
+        .brand-area { display: flex; align-items: center; flex-shrink: 0; gap: 8px; }
         .header-container.search-active .brand-area { display: none; }
         
-        .main-logo { 
-            height: 120px; width: auto; display: block; object-fit: contain; transition: 0.3s;
-        }
+        .main-logo { height: 120px; width: auto; display: block; object-fit: contain; }
 
-        .visually-hidden {
-            position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-            overflow: hidden; clip: rect(0,0,0,0); border: 0;
+        .mini-circle-icon {
+            background: var(--tag-bg); border: none; border-radius: 50%;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; color: var(--text-main);
+            text-decoration: none; padding: 0;
         }
+        .mini-circle-icon:hover { background: #dfe6e9; transform: scale(1.05); }
+        .mini-circle-icon svg { width: 16px; height: 16px; fill: currentColor; }
 
-        .search-section { display: flex; align-items: center; flex-grow: 1; justify-content: flex-end; }
+        .search-section { display: flex; align-items: center; flex-grow: 1; justify-content: flex-end; gap: 8px; }
         .header-container.search-active .search-section { justify-content: center; width: 100%; }
 
         .search-bar-wrapper {
@@ -66,38 +69,53 @@
         .header-container.search-active .search-bar-wrapper { display: flex; }
 
         .back-btn { background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; }
+        .back-btn svg { width: 32px; height: 32px; fill: var(--text-main); }
+
         .search-input { flex-grow: 1; border: none; padding: 15px; font-size: 18px; outline: none; background: transparent; }
-        .search-trigger { background: none; border: none; cursor: pointer; padding: 15px; border-radius: 50%; display: flex; align-items: center; }
-        .search-trigger svg, .back-btn svg { width: 32px; height: 32px; fill: var(--text-main); }
+        
+        .icon-circle-btn {
+            background: none; border: none; border-radius: 50%;
+            width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s; color: var(--text-main); position: relative;
+        }
+        .icon-circle-btn:hover:not(:disabled) { background: #f1f3f5; }
+        .icon-circle-btn svg { width: 32px; height: 32px; fill: currentColor; }
+        .icon-circle-btn.is-active { color: var(--accent-red); }
+
+        /* お気に入り0件の時のスタイル */
+        .icon-circle-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .fav-count-badge {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%);
+            font-size: 11px; font-weight: 900; color: #fff;
+            text-shadow: 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+            pointer-events: none; z-index: 2; line-height: 1; display: none;
+        }
+
+        .header-container.search-active .icon-circle-btn { display: none; }
 
         /* --- フィルターエリア --- */
         .filter-card { background: #ffffff; border-bottom: 1px solid var(--border-color); }
         .filter-inner { padding: 0 20px; max-width: 1400px; margin: 0 auto; }
 
         .tag-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
-        
         .filter-controls-left { display: flex; align-items: center; } 
         .control-group { display: flex; align-items: center; gap: 4px; }
 
         .btn-latest { 
-            padding: 5px 12px; border-radius: 4px; background: #f0f7ff; border: 1px solid #c3dafe; 
-            color: var(--accent-blue); font-size: 11px; font-weight: bold; cursor: pointer; transition: 0.2s;
+            padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;
+            background: #f0f7ff; border: 1px solid #c3dafe; color: var(--accent-blue);
         }
         .btn-latest.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
         
-        .badge { background: var(--accent-blue); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; display: none; pointer-events: none; }
+        .badge { background: var(--accent-blue); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; display: none; }
+        .mini-clear-btn { display: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #b2bec3; line-height: 1; padding: 4px; }
 
-        .mini-clear-btn { display: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #b2bec3; line-height: 1; padding: 4px; transition: 0.2s; }
-        .mini-clear-btn:hover { color: #e74c3c; }
-
-        /* ソートトグルスイッチ */
-        .sort-toggle { 
-            display: flex; background: #f1f3f5; border-radius: 15px; padding: 2px; border: 1px solid #eee; 
-            margin-left: 10px; /* バッジがあるため少し間隔を調整 */
-        }
-        .sort-opt { 
-            font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 13px; cursor: pointer; color: #b2bec3; transition: 0.2s;
-        }
+        .sort-toggle { display: flex; background: #f1f3f5; border-radius: 15px; padding: 2px; border: 1px solid #eee; margin-left: 10px; }
+        .sort-opt { font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 13px; cursor: pointer; color: #b2bec3; }
         .sort-opt.active { background: #fff; color: var(--accent-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         .toggle-btn { cursor: pointer; font-size: 11px; color: var(--accent-blue); font-weight: bold; }
@@ -106,18 +124,14 @@
         .tag-drawer.active { display: block; }
         .tag-group { display: flex; flex-wrap: wrap; gap: 6px; }
 
-        .hashtag { 
-            padding: 4px 10px; border-radius: 4px; background: var(--tag-bg); 
-            font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #eee; transition: 0.2s; 
-        }
-        .hashtag.is-era { background: var(--era-tag-bg); color: var(--era-tag-text); border-color: #b3e5fc; }
-        .hashtag.selected { background: var(--tag-selected) !important; color: #fff !important; border-color: var(--tag-selected); }
+        .hashtag { padding: 4px 10px; border-radius: 4px; background: var(--tag-bg); font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #eee; }
+        .hashtag.selected { background: var(--tag-selected) !important; color: #fff !important; }
 
         /* --- メインコンテンツ --- */
         #main-content { padding-top: calc(var(--header-h-pc) + 60px); padding-bottom: 60px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 0 20px; max-width: 1400px; margin: 0 auto; }
 
-        .card { background: var(--bg-card); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid #eee; display: flex; flex-direction: column; transition: 0.2s; height: 100%; }
+        .card { background: var(--bg-card); border-radius: 10px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid #eee; display: flex; flex-direction: column; transition: 0.2s; height: 100%; position: relative; }
         .card:hover { transform: translateY(-4px); }
         
         .card-thumb { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; cursor: pointer; overflow: hidden; }
@@ -128,13 +142,20 @@
 
         .card-content { padding: 14px; flex-grow: 1; display: flex; flex-direction: column; position: relative; }
         .yt-brand-top { position: absolute; top: 14px; right: 14px; height: 11px; }
+        
+        .card-fav-btn {
+            position: absolute; top: 32px; right: 14px; z-index: 10;
+            background: none; border: none; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: flex-end; cursor: pointer; color: #dfe6e9;
+        }
+        .card-fav-btn.is-active { color: var(--accent-red); }
+        .card-fav-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
         .card-title { font-weight: 800; font-size: 14px; margin: 0; line-height: 1.4; padding-right: 40px; }
         .card-artist { font-size: 12px; color: var(--text-muted); margin: 4px 0 10px; }
         .card-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
 
         .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
-        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; transition: 0.2s; }
-        .card-tag-item:hover { background: var(--accent-blue); color: #fff; }
+        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
         .card-tag-item.active { background: var(--tag-selected); color: #fff; }
 
         /* --- モーダル --- */
@@ -150,7 +171,9 @@
             .main-logo { height: 75px; }
             #main-content { padding-top: calc(var(--header-h-sp) + 70px); }
             .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-            .sort-toggle { margin-left: 6px; }
+            .brand-area { gap: 4px; }
+            .mini-circle-icon { width: 28px; height: 28px; }
+            .mini-circle-icon svg { width: 14px; height: 14px; }
         }
     </style>
 </head>
@@ -159,16 +182,29 @@
 <header class="header-sticky" id="app-header">
     <div id="header-container" class="header-container">
         <div class="brand-area">
-            <h1 class="visually-hidden">Prompt Tracks</h1>
+            <button id="site-bookmark-btn" class="mini-circle-icon" title="サイトをブックマーク">
+                <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+            </button>
+            <a href="https://x.com/Prompttracks" target="_blank" rel="noopener" class="mini-circle-icon" title="公式Xをフォロー">
+                <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
             <img src="logo.png" alt="Prompt Tracks" class="main-logo">
         </div>
 
         <div class="search-section">
             <div id="search-bar" class="search-bar-wrapper">
-                <button id="back-btn" class="back-btn"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+                <button id="back-btn" class="back-btn" title="戻る"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
                 <input type="text" id="search-input" class="search-input" placeholder="曲名、アーティストで検索...">
             </div>
-            <button id="search-trigger" class="search-trigger"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 10 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
+            
+            <button id="fav-filter-btn" class="icon-circle-btn">
+                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                <span id="fav-count-display" class="fav-count-badge"></span>
+            </button>
+
+            <button id="search-trigger" class="icon-circle-btn">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 10 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </button>
         </div>
     </div>
 
@@ -220,7 +256,16 @@
     };
 
     const client = supabase.createClient(CONFIG.URL, 'e' + CONFIG.KEY.substring(1).trim());
-    let store = { allData: [], selectedTags: [], query: "", showLatestOnly: false, sortMode: 'views' };
+    let store = { 
+        allData: [], 
+        displayData: [], 
+        selectedTags: [], 
+        query: "", 
+        showLatestOnly: false, 
+        showFavoritesOnly: false, 
+        sortMode: 'views', 
+        favorites: JSON.parse(localStorage.getItem('pt_favs') || '[]') 
+    };
 
     const els = {
         header: document.getElementById('app-header'),
@@ -236,6 +281,9 @@
         tagClearBtn: document.getElementById('tag-clear-btn'),
         latestBtn: document.getElementById('latest-btn'),
         latestClearBtn: document.getElementById('latest-clear-btn'),
+        favFilterBtn: document.getElementById('fav-filter-btn'),
+        favCount: document.getElementById('fav-count-display'),
+        siteBookmarkBtn: document.getElementById('site-bookmark-btn'),
         modal: document.getElementById('video-modal'),
         player: document.getElementById('player-target'),
         main: document.getElementById('main-content'),
@@ -243,10 +291,7 @@
         sortRandom: document.getElementById('sort-random')
     };
 
-    const updateMainPadding = () => {
-        const h = els.header.offsetHeight;
-        els.main.style.paddingTop = (h + 20) + "px";
-    };
+    const updateMainPadding = () => { els.main.style.paddingTop = (els.header.offsetHeight + 20) + "px"; };
 
     const get5MinKey = (dateStr) => {
         if (!dateStr) return "";
@@ -255,10 +300,30 @@
         return d.toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit' }) + ":" + String(m).padStart(2, '0');
     };
 
-    const isEra = (t) => /^\d{4}s?$/.test(t) || t.includes('年代');
     const formatViews = (n) => n >= 10000 ? `${(n/10000).toFixed(1)}万 views` : `${Number(n).toLocaleString()} views`;
 
-    const applyFilter = () => {
+    const updateFavBadge = () => {
+        const count = store.favorites.length;
+        els.favCount.textContent = count > 0 ? count : "";
+        els.favCount.style.display = count > 0 ? "block" : "none";
+        
+        // 0件の場合はボタンを無効化
+        if (count === 0) {
+            store.showFavoritesOnly = false;
+            els.favFilterBtn.disabled = true;
+        } else {
+            els.favFilterBtn.disabled = false;
+        }
+    };
+
+    window.toggleFavorite = (url) => {
+        store.favorites = store.favorites.includes(url) ? store.favorites.filter(id => id !== url) : [...store.favorites, url];
+        localStorage.setItem('pt_favs', JSON.stringify(store.favorites));
+        updateFavBadge();
+        applyFilter(false);
+    };
+
+    const applyFilter = (shouldReshuffle = true) => {
         const latestTimeKey = store.allData.length 
             ? get5MinKey(Math.max(...store.allData.map(i => new Date(i.created_at || 0))))
             : null;
@@ -267,35 +332,36 @@
             const matchTags = store.selectedTags.every(t => (i.hashtags || "").includes(t));
             const matchQuery = [i.Origin_song_name, i.Origin_artist_name, i.hashtags].some(f => (f || "").toLowerCase().includes(store.query));
             const matchLatest = !store.showLatestOnly || (get5MinKey(i.created_at) === latestTimeKey);
-            return matchTags && matchQuery && matchLatest;
+            const matchFav = !store.showFavoritesOnly || store.favorites.includes(i.url);
+            return matchTags && matchQuery && matchLatest && matchFav;
         });
 
         if (store.sortMode === 'views') {
             filtered.sort((a, b) => (b.views || 0) - (a.views || 0));
+            store.displayData = filtered;
+        } else if (shouldReshuffle) {
+            store.displayData = filtered.sort(() => Math.random() - 0.5);
         } else {
-            filtered.sort(() => Math.random() - 0.5);
+            const currentIds = filtered.map(item => item.url);
+            store.displayData = store.displayData.filter(item => currentIds.includes(item.url));
         }
 
+        updateFavBadge();
         els.latestBtn.classList.toggle('active', store.showLatestOnly);
         els.latestClearBtn.style.display = store.showLatestOnly ? 'inline-block' : 'none';
+        els.favFilterBtn.classList.toggle('is-active', store.showFavoritesOnly);
         els.badge.textContent = store.selectedTags.length;
         els.badge.style.display = store.selectedTags.length ? 'inline-block' : 'none';
         els.tagClearBtn.style.display = store.selectedTags.length ? 'inline-block' : 'none';
-
         els.sortViews.classList.toggle('active', store.sortMode === 'views');
         els.sortRandom.classList.toggle('active', store.sortMode === 'random');
 
-        document.querySelectorAll('.hashtag').forEach(h => {
-            const cleanText = h.textContent.split(' (')[0];
-            h.classList.toggle('selected', store.selectedTags.includes(cleanText));
-        });
-
-        renderCards(filtered);
+        renderCards(store.displayData);
     };
 
     const renderCards = (items) => {
         els.grid.innerHTML = items.map(i => {
-            const tags = (i.hashtags || "").split(',').filter(t => t.trim());
+            const isFav = store.favorites.includes(i.url);
             return `
             <article class="card">
                 <div class="card-thumb" onclick="openVideo('${i.url}')">
@@ -303,56 +369,72 @@
                 </div>
                 <div class="card-content">
                     <img src="${CONFIG.YT_LOGO}" class="yt-brand-top" alt="YouTube">
+                    <button class="card-fav-btn ${isFav ? 'is-active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${i.url}')">
+                        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </button>
                     <h3 class="card-title">${i.Origin_song_name || 'Untitled'}</h3>
                     <p class="card-artist">${i.Origin_artist_name || 'Unknown'}</p>
                     <div class="card-meta"><span>${formatViews(i.views)}</span></div>
                     <div class="card-tags">
-                        ${tags.map(t => {
-                            const cleanT = t.trim();
-                            const activeClass = store.selectedTags.includes(cleanT) ? 'active' : '';
-                            return `<span class="card-tag-item ${activeClass}" onclick="event.stopPropagation(); toggleTag('${cleanT}')">${cleanT}</span>`;
-                        }).join('')}
+                        ${(i.hashtags || "").split(',').filter(t => t.trim()).map(t => `<span class="card-tag-item ${store.selectedTags.includes(t.trim()) ? 'active' : ''}" onclick="event.stopPropagation(); toggleTag('${t.trim()}')">${t.trim()}</span>`).join('')}
                     </div>
                 </div>
             </article>`}).join('');
     };
 
-    els.latestBtn.onclick = () => { store.showLatestOnly = !store.showLatestOnly; applyFilter(); };
-    els.latestClearBtn.onclick = () => { store.showLatestOnly = false; applyFilter(); };
-    els.tagClearBtn.onclick = () => { store.selectedTags = []; applyFilter(); };
+    els.siteBookmarkBtn.onclick = () => {
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const msg = isMac ? 'Command + D キーを押すとブックマークできます。' : 'Ctrl + D キーを押すとブックマークできます。';
+        if (navigator.share) {
+            navigator.share({ title: document.title, url: location.href }).catch(() => alert(msg));
+        } else { alert(msg); }
+    };
+
+    const closeSearch = () => { 
+        els.container.classList.remove('search-active'); 
+        els.searchInput.value = ""; store.query = ""; applyFilter(); 
+    };
+
     els.searchTrigger.onclick = () => { els.container.classList.add('search-active'); els.searchInput.focus(); };
-    els.backBtn.onclick = () => { els.container.classList.remove('search-active'); els.searchInput.value = ""; store.query = ""; applyFilter(); };
+    els.backBtn.onclick = closeSearch;
+    els.searchInput.onblur = () => { 
+        setTimeout(() => { if (els.searchInput.value.trim() === "" && els.container.classList.contains('search-active')) closeSearch(); }, 150);
+    };
     els.searchInput.oninput = (e) => { store.query = e.target.value.toLowerCase(); applyFilter(); };
     
-    els.sortViews.onclick = () => { store.sortMode = 'views'; applyFilter(); };
-    els.sortRandom.onclick = () => { store.sortMode = 'random'; applyFilter(); };
+    els.latestBtn.onclick = () => { store.showLatestOnly = !store.showLatestOnly; applyFilter(); };
+    els.latestClearBtn.onclick = () => { store.showLatestOnly = false; applyFilter(); };
+    
+    // お気に入りボタンのクリックイベント（0件ガード付き）
+    els.favFilterBtn.onclick = () => { 
+        if (store.favorites.length > 0) {
+            store.showFavoritesOnly = !store.showFavoritesOnly; 
+            applyFilter(); 
+        }
+    };
 
+    els.tagClearBtn.onclick = () => { store.selectedTags = []; applyFilter(); };
+    els.sortViews.onclick = () => { store.sortMode = 'views'; applyFilter(); };
+    els.sortRandom.onclick = () => { store.sortMode = 'random'; applyFilter(true); };
     els.tagToggle.onclick = () => {
         const isActive = els.tagDrawer.classList.toggle('active');
         els.tagToggle.textContent = isActive ? '#閉じる ▲' : '#すべて表示 ▼';
         setTimeout(updateMainPadding, 10);
     };
 
-    window.toggleTag = (name) => {
-        store.selectedTags = store.selectedTags.includes(name) ? store.selectedTags.filter(t => t !== name) : [...store.selectedTags, name];
-        applyFilter();
-    };
+    window.toggleTag = (name) => { store.selectedTags = store.selectedTags.includes(name) ? store.selectedTags.filter(t => t !== name) : [...store.selectedTags, name]; applyFilter(); };
 
     const init = async () => {
+        updateFavBadge();
         try {
             const { data, error } = await client.from('ai_song_youtube_ranking').select('*').order('created_at', { ascending: false });
             if (error) throw error;
             store.allData = data.filter(i => i.Minor_Category !== '除外');
             document.getElementById('status').style.display = 'none';
-            
             const counts = {};
             store.allData.forEach(i => (i.hashtags || "").split(',').forEach(t => { if(t.trim()) counts[t.trim()] = (counts[t.trim()] || 0) + 1; }));
-            const sortedTags = Object.entries(counts).sort((a, b) => {
-                const aEra = isEra(a[0]), bEra = isEra(b[0]);
-                return aEra === bEra ? b[1] - a[1] : aEra ? -1 : 1;
-            }).slice(0, 60);
-            els.tagContainer.innerHTML = sortedTags.map(([tag, count]) => `<span class="hashtag ${isEra(tag) ? 'is-era' : ''}" onclick="toggleTag('${tag}')">${tag} (${count})</span>`).join('');
-            
+            const sortedTags = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 60);
+            els.tagContainer.innerHTML = sortedTags.map(([tag, count]) => `<span class="hashtag" onclick="toggleTag('${tag}')">${tag} (${count})</span>`).join('');
             applyFilter();
             updateMainPadding();
             window.addEventListener('resize', updateMainPadding);
@@ -366,7 +448,6 @@
         document.body.style.overflow = 'hidden';
     };
     document.getElementById('modal-close').onclick = () => { els.modal.classList.remove('active'); els.player.innerHTML = ''; document.body.style.overflow = ''; };
-
     init();
 })();
 </script>
