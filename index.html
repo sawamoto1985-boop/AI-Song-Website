@@ -45,13 +45,11 @@
             position: relative;
         }
 
-        /* ロゴとサブボタンの並び（右側にボタン） */
-        .brand-area { display: flex; align-items: center; flex-shrink: 0; gap: 10px; }
+        .brand-area { display: flex; align-items: center; flex-shrink: 0; gap: 8px; }
         .header-container.search-active .brand-area { display: none; }
         
         .main-logo { height: 120px; width: auto; display: block; object-fit: contain; }
 
-        /* ロゴ横の小型アイコンボタン（背景あり） */
         .mini-circle-icon {
             background: var(--tag-bg); border: none; border-radius: 50%;
             width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
@@ -83,7 +81,6 @@
         .icon-circle-btn:hover:not(:disabled) { background: #f1f3f5; }
         .icon-circle-btn svg { width: 32px; height: 32px; fill: currentColor; }
         .icon-circle-btn.is-active { color: var(--accent-red); }
-
         .icon-circle-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .fav-count-badge {
@@ -110,10 +107,11 @@
         .btn-latest.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
         
         .badge { background: var(--accent-blue); color: #fff; padding: 2px 8px; border-radius: 10px; font-size: 10px; display: none; }
-        .mini-clear-btn { display: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #b2bec3; line-height: 1; padding: 4px; }
+        .mini-clear-btn { display: none; cursor: pointer; font-size: 11px; font-weight: bold; color: #b2bec3; line-height: 1; padding: 4px; transition: 0.2s; }
+        .mini-clear-btn:hover { color: var(--accent-red); }
 
         .sort-toggle { display: flex; background: #f1f3f5; border-radius: 15px; padding: 2px; border: 1px solid #eee; margin-left: 10px; }
-        .sort-opt { font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 13px; cursor: pointer; color: #b2bec3; }
+        .sort-opt { font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 13px; cursor: pointer; color: #b2bec3; transition: 0.2s; }
         .sort-opt.active { background: #fff; color: var(--accent-blue); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         .toggle-btn { cursor: pointer; font-size: 11px; color: var(--accent-blue); font-weight: bold; }
@@ -123,6 +121,7 @@
         .tag-group { display: flex; flex-wrap: wrap; gap: 6px; }
 
         .hashtag { padding: 4px 10px; border-radius: 4px; background: var(--tag-bg); font-size: 11px; font-weight: bold; cursor: pointer; border: 1px solid #eee; transition: 0.2s; }
+        .hashtag.is-era { background: var(--era-tag-bg); color: var(--era-tag-text); border-color: #b3e5fc; }
         .hashtag.selected { background: var(--tag-selected) !important; color: #fff !important; }
 
         /* --- メインコンテンツ --- */
@@ -143,7 +142,7 @@
         
         .card-fav-btn {
             position: absolute; top: 32px; right: 14px; z-index: 10;
-            background: none; border: none; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: flex-end; cursor: pointer; color: #dfe6e9;
+            background: none; border: none; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: flex-end; cursor: pointer; color: #dfe6e9; transition: 0.2s;
         }
         .card-fav-btn.is-active { color: var(--accent-red); }
         .card-fav-btn svg { width: 18px; height: 18px; fill: currentColor; }
@@ -153,7 +152,7 @@
         .card-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; }
 
         .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
-        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; }
+        .card-tag-item { font-size: 9px; color: var(--accent-blue); background: #f0f7ff; padding: 2px 6px; border-radius: 3px; cursor: pointer; transition: 0.2s; }
         .card-tag-item.active { background: var(--tag-selected); color: #fff; }
 
         /* --- モーダル --- */
@@ -169,9 +168,8 @@
             .main-logo { height: 75px; }
             #main-content { padding-top: calc(var(--header-h-sp) + 70px); }
             .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-            .brand-area { gap: 6px; }
+            .brand-area { gap: 4px; }
             .mini-circle-icon { width: 28px; height: 28px; }
-            .mini-circle-icon svg { width: 14px; height: 14px; }
         }
     </style>
 </head>
@@ -254,7 +252,16 @@
     };
 
     const client = supabase.createClient(CONFIG.URL, 'e' + CONFIG.KEY.substring(1).trim());
-    let store = { allData: [], displayData: [], selectedTags: [], query: "", showLatestOnly: false, showFavoritesOnly: false, sortMode: 'views', favorites: JSON.parse(localStorage.getItem('pt_favs') || '[]') };
+    let store = { 
+        allData: [], 
+        displayData: [], 
+        selectedTags: [], 
+        query: "", 
+        showLatestOnly: false, 
+        showFavoritesOnly: false, 
+        sortMode: 'views', 
+        favorites: JSON.parse(localStorage.getItem('pt_favs') || '[]') 
+    };
 
     const els = {
         header: document.getElementById('app-header'),
@@ -281,6 +288,9 @@
     };
 
     const updateMainPadding = () => { els.main.style.paddingTop = (els.header.offsetHeight + 20) + "px"; };
+
+    // 【復元】年代判定ロジック
+    const isEra = (t) => /^\d{4}s?$/.test(t) || t.includes('年代');
 
     const get5MinKey = (dateStr) => {
         if (!dateStr) return "";
@@ -343,6 +353,11 @@
         els.sortViews.classList.toggle('active', store.sortMode === 'views');
         els.sortRandom.classList.toggle('active', store.sortMode === 'random');
 
+        document.querySelectorAll('.hashtag').forEach(h => {
+            const tagText = h.textContent.split(' (')[0];
+            h.classList.toggle('selected', store.selectedTags.includes(tagText));
+        });
+
         renderCards(store.displayData);
     };
 
@@ -372,36 +387,23 @@
     els.siteBookmarkBtn.onclick = () => {
         const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
         const msg = isMac ? 'Command + D キーを押すとブックマークできます。' : 'Ctrl + D キーを押すとブックマークできます。';
-        if (navigator.share) {
-            navigator.share({ title: document.title, url: location.href }).catch(() => alert(msg));
-        } else { alert(msg); }
+        if (navigator.share) { navigator.share({ title: document.title, url: location.href }).catch(() => alert(msg)); } 
+        else { alert(msg); }
     };
 
-    const closeSearch = () => { 
-        els.container.classList.remove('search-active'); 
-        els.searchInput.value = ""; store.query = ""; applyFilter(); 
-    };
-
+    const closeSearch = () => { els.container.classList.remove('search-active'); els.searchInput.value = ""; store.query = ""; applyFilter(); };
     els.searchTrigger.onclick = () => { els.container.classList.add('search-active'); els.searchInput.focus(); };
     els.backBtn.onclick = closeSearch;
-    els.searchInput.onblur = () => { 
-        setTimeout(() => { if (els.searchInput.value.trim() === "" && els.container.classList.contains('search-active')) closeSearch(); }, 150);
-    };
+    els.searchInput.onblur = () => { setTimeout(() => { if (els.searchInput.value.trim() === "" && els.container.classList.contains('search-active')) closeSearch(); }, 150); };
     els.searchInput.oninput = (e) => { store.query = e.target.value.toLowerCase(); applyFilter(); };
     
-    els.latestBtn.onclick = () => { 
-        store.showLatestOnly = !store.showLatestOnly;
-        if(store.showLatestOnly) store.showFavoritesOnly = false;
-        applyFilter(); 
-    };
+    els.latestBtn.onclick = () => { store.showLatestOnly = !store.showLatestOnly; if(store.showLatestOnly) store.showFavoritesOnly = false; applyFilter(); };
+    els.latestClearBtn.onclick = () => { store.showLatestOnly = false; applyFilter(); };
     
     els.favFilterBtn.onclick = () => { 
         if (store.favorites.length > 0) {
             store.showFavoritesOnly = !store.showFavoritesOnly; 
-            if(store.showFavoritesOnly) {
-                store.showLatestOnly = false;
-                store.selectedTags = [];
-            }
+            if(store.showFavoritesOnly) { store.showLatestOnly = false; store.selectedTags = []; }
             applyFilter(); 
         }
     };
@@ -430,8 +432,14 @@
             document.getElementById('status').style.display = 'none';
             const counts = {};
             store.allData.forEach(i => (i.hashtags || "").split(',').forEach(t => { if(t.trim()) counts[t.trim()] = (counts[t.trim()] || 0) + 1; }));
-            const sortedTags = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 60);
-            els.tagContainer.innerHTML = sortedTags.map(([tag, count]) => `<span class="hashtag" onclick="toggleTag('${tag}')">${tag} (${count})</span>`).join('');
+            
+            // 【復元】ハッシュタグの並び順ロジック
+            const sortedTags = Object.entries(counts).sort((a, b) => {
+                const aEra = isEra(a[0]), bEra = isEra(b[0]);
+                return aEra === bEra ? b[1] - a[1] : aEra ? -1 : 1;
+            }).slice(0, 60);
+
+            els.tagContainer.innerHTML = sortedTags.map(([tag, count]) => `<span class="hashtag ${isEra(tag) ? 'is-era' : ''}" onclick="toggleTag('${tag}')">${tag} (${count})</span>`).join('');
             applyFilter();
             updateMainPadding();
             window.addEventListener('resize', updateMainPadding);
